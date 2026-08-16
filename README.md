@@ -1,143 +1,103 @@
-<h1 align="center">woow_ha_ios</h1>
+<p align="center">
+  <img src="docs/screenshots/icon.png" alt="woowtech Home" width="120"/>
+</p>
+
+<h1 align="center">woowtech Home — iOS App</h1>
 
 <p align="center">
-  <strong>Woow base fork of <a href="https://github.com/home-assistant/iOS">home-assistant/iOS</a> + white-label rebrand toolkit</strong><br/>
-  Pinned upstream, scripted branding, preflight-gated — seed once per brand, rebrand in one run
+  <strong>White-label Home Assistant companion app for the woowtech Home ecosystem</strong><br/>
+  iOS counterpart of <a href="https://github.com/WOOWTECH/woow_ha_app">woow_ha_app</a> (Android)
 </p>
 
 <p align="center">
-  <a href="#what-this-repo-is">About</a> &bull;
-  <a href="#topology">Topology</a> &bull;
-  <a href="#the-rebrand-toolkit">Toolkit</a> &bull;
-  <a href="#usage-new-brand">Usage</a> &bull;
-  <a href="#local-build-environment">Environment</a> &bull;
-  <a href="#upstream-policy">Upstream policy</a> &bull;
+  <a href="#overview">Overview</a> &bull;
+  <a href="#architecture">Architecture</a> &bull;
+  <a href="#screenshots">Screenshots</a> &bull;
+  <a href="#building">Building</a> &bull;
+  <a href="#verification-status">Verification</a> &bull;
   <a href="README_zh-TW.md">中文文件</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Upstream%20pin-release%2F2026.7.3%2F2026.2546-purple" alt="pin"/>
-  <img src="https://img.shields.io/badge/Xcode-26.6-blue?logo=xcode" alt="Xcode"/>
-  <img src="https://img.shields.io/badge/Preflight-66%20gates-brightgreen" alt="preflight"/>
-  <img src="https://img.shields.io/badge/License-Apache%202.0-green" alt="license"/>
+  <img src="https://img.shields.io/badge/iOS-16.4+-blue?logo=apple" alt="iOS 16.4+"/>
+  <img src="https://img.shields.io/badge/Bundle%20ID-com.woowtech.home-6183FC" alt="com.woowtech.home"/>
+  <img src="https://img.shields.io/badge/Upstream-release%2F2026.7.3%2F2026.2546-purple" alt="Upstream pin"/>
+  <img src="https://img.shields.io/badge/License-Apache%202.0-green" alt="Apache 2.0"/>
 </p>
 
 ---
 
-## What this repo is
+## Overview
 
-This is the **shared base** for Woow's white-label iOS builds of the Home Assistant
-Companion app. It is upstream code pinned at tag `release/2026.7.3/2026.2546`
-(commit `70e675a8`, the 2026-08-04 App Store release), **unbranded**, plus:
+**woowtech Home iOS** is a white-label build of the official
+[Home Assistant Companion app](https://github.com/home-assistant/iOS), produced by the
+one-shot rebrand toolkit in the shared base
+[`woow_ha_ios`](https://github.com/WOOWTECH/woow_ha_ios) — the same pipeline that built
+[`Woow_simon_ha_ios`](https://github.com/WOOWTECH/Woow_simon_ha_ios) and
+[`Woow_apporo_ha_ios`](https://github.com/WOOWTECH/Woow_apporo_ha_ios).
+A native Swift shell (onboarding, OAuth, sensors, deep links, widgets) wraps the
+Home Assistant web frontend served by the customer's own server.
 
-- `Tools/brand/` — the complete rebrand toolkit (script, string engine, icon
-  pipeline, 66-gate preflight, line-verified replacement inventory)
-- `docs/` — fork-divergence ledger, environment trap notes, per-brand reuse guides
+| | |
+|---|---|
+| **Bundle ID** | `com.woowtech.home` (Release) / `com.woowtech.home.dev` (Debug) — aligned with Android |
+| **URL scheme** | `woowhome://` (deep links + OAuth callback) |
+| **OAuth client** | `https://woowtech.github.io/woow_ha_ios/ios` — **own identity**, unlike the Android build which still rides on upstream's `homeassistant://` + official client_id; Android should migrate to match |
+| **Brand color** | `#6183FC` |
+| **Upstream pin** | `home-assistant/iOS` tag `release/2026.7.3/2026.2546` |
 
-Brand repos are seeded **from here** with full git history, then branded by one
-scripted run. First production brand:
-[`Woow_simon_ha_ios`](https://github.com/WOOWTECH/Woow_simon_ha_ios)
-(`com.simon.home`, simulator-verified against a live HA 2026.4.2 server).
-
-## Topology
-
-```mermaid
-flowchart TB
-    UP["home-assistant/iOS<br/>(upstream)"] -- "pin tag<br/>release/2026.7.3/2026.2546" --> BASE["<b>woow_ha_ios</b> (this repo)<br/>unbranded + Tools/brand/"]
-    BASE -- "seed: clone with full history<br/>+ disable CI (commit #1)<br/>+ rebrand-ios.sh (commit #2)" --> SIMON["Woow_simon_ha_ios<br/>com.simon.home"]
-    BASE -- "same flow, apporo-ios.conf" --> APPORO["Woow_apporo_ha_ios<br/>(future)"]
-```
-
-Rules (mirroring the Android `Woow_simon_ha_app` conventions):
-
-- No merges/cherry-picks between base and brand repos — shared changes flow **down**
-  from the base (re-seed or manual pick)
-- Never seed a new brand from an already-branded tree (the script's keywords are gone)
-- Never rename Swift modules, targets, or `HomeAssistant.xcodeproj` itself (keeps
-  future upstream picks reviewable)
-- The rebrand script is **one-shot**: to change parameters,
-  `git reset --hard pre-rebrand` and run again
-
-## The Rebrand Toolkit
+## Architecture
 
 ```mermaid
 flowchart LR
-    INV["rebrand-inventory.md<br/>line-verified replacement map<br/>(8-way source sweep)"] -.grounds.-> SH
-    CONF["&lt;brand&gt;-ios.conf"] --> SH["rebrand-ios.sh<br/>10 staged steps, fail-fast<br/>(must_sed md5 guards)"]
-    SH --> S1["Brand.xcconfig +<br/>bundle-ID concat rule"]
-    SH --> S2["entitlements dual-track<br/>dev (free-team) / release"]
-    SH --> S3["OAuth constants +<br/>URL scheme sweep"]
-    SH --> S4["replace_strings.py<br/>34 locales · whitelists ·<br/>format-specifier parity"]
-    SH --> S5["gen_icons.py + icon_tool.swift<br/>flatten alpha, all iconsets"]
-    S1 & S2 & S3 & S4 & S5 --> PF["preflight-ios.py<br/>66 pass/fail gates"]
+    subgraph iPhone["woowtech Home app (iOS)"]
+        WV["WKWebView<br/>HA frontend"] <--> BUS["JS ↔ Swift<br/>message bus"] <--> N["Native shell<br/>onboarding · OAuth · sensors ·<br/>woowhome:// deep links · widgets"]
+    end
+    WV -- "HTTPS / WebSocket" --> HA["Home Assistant server<br/>(customer-hosted)"]
+    N -.->|"IndieAuth client page<br/>woowtech.github.io/woow_ha_ios/ios"| PAGE["declares<br/>woowhome://auth-callback"]
 ```
 
-| File | Role |
+The client_id page (hosted on the base repo's GitHub Pages) is what Home Assistant
+servers validate the OAuth redirect against — it is live and declares
+`woowhome://auth-callback`. Fork topology, toolkit design, and environment notes:
+see the base repo's [README](https://github.com/WOOWTECH/woow_ha_ios#readme).
+Divergence from upstream is ledgered in [`docs/fork-divergence.md`](docs/fork-divergence.md).
+
+## Screenshots
+
+| Upstream baseline | woowtech onboarding |
 |---|---|
-| `Tools/brand/rebrand-ios.sh` | Orchestrator — every substitution guarded by an md5 "must-change" check; dies loudly on pattern drift |
-| `Tools/brand/simon-ios.conf` | Brand parameter file (copy per brand) |
-| `Tools/brand/replace_strings.py` | Localization engine: full-text entry parser (multi-line values), key/value whitelists (Nabu Casa, mDNS placeholders), `%@` format-specifier parity check, `plutil -lint` gate |
-| `Tools/brand/gen_icons.py` + `icon_tool.swift` | CoreGraphics icon pipeline — flattens alpha onto brand color, regenerates every `.appiconset`/logo imageset incl. alternate-icon previews; no ImageMagick needed |
-| `Tools/brand/preflight-ios.py` | 66 checks: OAuth constants, scheme residue, bundle-ID concat in xcconfig/entitlements/plists, dual-track wiring, icon alpha, brand colors, entry-link residue, Lokalise-workflow safety net |
-| `Tools/brand/rebrand-inventory.md` | Ground truth: what to replace/keep/decide, file:line, produced by 8 parallel scouts against the pinned tree |
-| `Tools/brand/android-reference/` | The Android toolkit (`Woow_simon_ha_app`) kept for pattern parity |
+| <img src="docs/screenshots/baseline-upstream-onboarding.png" width="280"/> | <img src="docs/screenshots/woowtech-onboarding.png" width="280"/> |
+| The unmodified upstream app built from the pinned tag (toolchain baseline). | After the one-shot rebrand: woowtech mark, name, copy, `#6183FC` accent — brand-clean native shell. |
 
-The toolkit survived a **5-lens adversarial review** (sed/shell semantics, cross-file
-consistency, string-engine dry runs on real locale files, icon-pipeline enumeration,
-coverage-vs-inventory audit) which caught 15 defects — including two would-be
-disasters (newline corruption across all 34 locales; a first-iconset crash that would
-have left a half-branded tree) — **before** the first real run.
+## Building
 
-## Usage (new brand)
+Same environment as all brands in this family (details in the
+[base repo](https://github.com/WOOWTECH/woow_ha_ios#local-build-environment)):
+Xcode 26.6+, watchOS platform downloaded, Homebrew CocoaPods (+`cocoapods-acknowledgements`),
+swiftlint/swiftformat.
 
 ```bash
-# 1. seed
-git clone <this repo> Woow_<brand>_ha_ios && cd Woow_<brand>_ha_ios
-git remote rename origin base
-git rm -rq .github/workflows && git commit -m "ci: disable upstream workflows"
-git tag pre-rebrand
-
-# 2. configure + run
-cp Tools/brand/simon-ios.conf Tools/brand/<brand>-ios.conf   # edit parameters
-bash Tools/brand/rebrand-ios.sh Tools/brand/<brand>-ios.conf
-python3 Tools/brand/preflight-ios.py Tools/brand/<brand>-ios.conf   # must be all green
-
-# 3. build
 pod install
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 xcodebuild -workspace HomeAssistant.xcworkspace -scheme App-Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
-**Before running**: the brand's OAuth `client_id` page must already be live and
-declare `<scheme>://auth-callback` (IndieAuth) — otherwise sign-in breaks against
-every standard HA server. Full checklist: [`docs/apporo-reuse.md`](docs/apporo-reuse.md).
+## Verification Status
 
-## Local Build Environment
-
-Hard-won environment notes for this pinned tag (details in
-[`docs/fork-divergence.md`](docs/fork-divergence.md)):
-
-| Trap | Resolution |
+| Stage | Status |
 |---|---|
-| Tag still uses **CocoaPods** (upstream dropped it later) | `brew install cocoapods` + install `cocoapods-acknowledgements` into its gem home; skip bundler entirely |
-| ruby 3.1.2 (`.ruby-version`) won't compile under Xcode 26 clang | Not needed for building — Fastlane only |
-| App scheme embeds a Watch app | Download the **watchOS platform** once, or scheme validation blocks every build |
-| SwiftLint build phase hard-fails when tools missing | `brew install swiftlint swiftformat` |
-| `xcode-select` points at CLT on this machine | Prefix all commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` |
-| Xcode 26.6 simulators | Use `iPhone 17` (there is no iPhone 16 runtime) |
+| Rebrand (3 934 strings / 34 locales, 79 asset sets) + preflight 66/66 | ✅ 2026-08-16 |
+| Simulator build + branded onboarding | ✅ 2026-08-16 |
+| Live server OAuth end-to-end, physical device, 8-category smoke | ⏳ pending |
 
-## Upstream Policy
+**Known gap**: the app icon is temporarily upscaled from the Android 192 px launcher
+asset — swap in the original 1024 px art via `Tools/brand/assets/woowtech-icon.png`
+and re-run the icon step when available.
 
-- **Pin, don't track**: no rolling merges. Review `home-assistant/iOS` releases
-  monthly and before each brand release; cherry-pick security fixes manually and
-  record them in the divergence ledger
-- **Never push upstream** from this fork family (OHF policy on autonomous-agent
-  contributions; also nothing here is upstream-relevant)
-- Apache 2.0 [`LICENSE.md`](LICENSE.md) and the in-app open-source acknowledgements
-  page are preserved in every brand build
-
-## License
+## License & Attribution
 
 Modified distribution of Home Assistant Companion for iOS, © Home Assistant
-contributors — [Apache License 2.0](LICENSE.md).
+contributors — [Apache License 2.0](LICENSE.md). Upstream attribution and the in-app
+open-source acknowledgements page are preserved.
