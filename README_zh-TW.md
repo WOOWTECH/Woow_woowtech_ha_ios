@@ -88,7 +88,8 @@ xcodebuild -workspace HomeAssistant.xcworkspace -scheme App-Debug \
 |---|---|
 | 換裝(3 934 條字串 / 34 語系、79 組資產)+ preflight 66/66 | ✅ 2026-08-16 |
 | 模擬器編譯 + 品牌 onboarding | ✅ 2026-08-16 |
-| 實伺服器 OAuth 全鏈路、實機、8 大類冒煙 | ⏳ 待辦 |
+| 實伺服器 OAuth 全鏈路(自建 client_id 被接受、`woowhome://` redirect、儀表板、深連結) | ✅ 2026-08-16([報告](docs/verification/phase4-report.md)) |
+| 實機 + 8 大類冒煙 | ⏳ 待辦 |
 
 **已知缺口**:app icon 暫以 Android 192px launcher 放大頂替——拿到 1024 原始檔後
 覆蓋 `Tools/brand/assets/woowtech-icon.png` 重跑 icon 步驟即可。

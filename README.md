@@ -90,7 +90,8 @@ xcodebuild -workspace HomeAssistant.xcworkspace -scheme App-Debug \
 |---|---|
 | Rebrand (3 934 strings / 34 locales, 79 asset sets) + preflight 66/66 | ✅ 2026-08-16 |
 | Simulator build + branded onboarding | ✅ 2026-08-16 |
-| Live server OAuth end-to-end, physical device, 8-category smoke | ⏳ pending |
+| Live server OAuth end-to-end (own client_id accepted, `woowhome://` redirect, dashboard, deep link) | ✅ 2026-08-16 ([report](docs/verification/phase4-report.md)) |
+| Physical device + 8-category smoke | ⏳ pending |
 
 **Known gap**: the app icon is temporarily upscaled from the Android 192 px launcher
 asset — swap in the original 1024 px art via `Tools/brand/assets/woowtech-icon.png`
