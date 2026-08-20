@@ -8188,7 +8188,6 @@
 					};
 					B627CB061D83C87B0057173E = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -8244,14 +8243,12 @@
 					};
 					B657A9061CA646EB00121384 = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 						TestTargetID = B657A8E51CA646EB00121384;
 					};
 					B66C58A4215086F0004AB261 = {
 						CreatedOnToolsVersion = 10.0;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -8268,13 +8265,11 @@
 					};
 					B67CE82322200D420034C1D0 = {
 						CreatedOnToolsVersion = 10.1;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 					};
 					B6AAD7A01D827DD40090B220 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -8291,7 +8286,6 @@
 					};
 					B6CC5D812159D10D00833E5D = {
 						CreatedOnToolsVersion = 10.0;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1530;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -8302,7 +8296,6 @@
 					};
 					B6CC5D8D2159D10E00833E5D = {
 						CreatedOnToolsVersion = 10.0;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -8316,13 +8309,11 @@
 					};
 					D03D891620E0A85200D4F28D = {
 						CreatedOnToolsVersion = 9.4.1;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 					};
 					D03D894120E0BC1800D4F28D = {
 						CreatedOnToolsVersion = 9.4.1;
-						DevelopmentTeam = QMQYCKL255;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 					};
@@ -11521,7 +11512,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9C4E5E21229D98220044C8EC /* HomeAssistant.debug.xcconfig */;
 			buildSettings = {
-				DEVELOPMENT_TEAM = QMQYCKL255;
 			};
 			name = Debug;
 		};
@@ -11529,7 +11519,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9C4E5E22229D98530044C8EC /* HomeAssistant.release.xcconfig */;
 			buildSettings = {
-				DEVELOPMENT_TEAM = QMQYCKL255;
 			};
 			name = Release;
 		};
