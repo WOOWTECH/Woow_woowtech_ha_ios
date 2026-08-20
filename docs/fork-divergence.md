@@ -26,4 +26,4 @@
 | 3 | (待補)entitlements 雙軌(dev 精簡/release 完整) | — | 決策 15 |
 | 4 | (待補)OnboardingAuthDetails OAuth 常數 | — | §7.2-3 |
 | 5 | (待補)rebrand 字串/assets | — | §7.2 |
-
+| 6 | 上游啟動卡片清空:`WhatsNewCatalog.release` / `TestFlightCommunicationCatalog.message` → nil(onboarding 後不再彈上游 What's New / TestFlight 卡;Settings 入口依 nil 自動隱藏) | (本 commit) | 已回饋基底腳本 step 10/11 + preflight §13 迴歸檢查 |

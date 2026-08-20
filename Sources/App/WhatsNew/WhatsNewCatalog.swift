@@ -59,29 +59,6 @@ import Shared
 /// )
 /// ```
 enum WhatsNewCatalog {
-    static let release: WhatsNewRelease? = WhatsNewRelease(
-        id: WhatsNewReleaseId("drop-support-2026.7.1"),
-        version: WhatsNewAppVersion(major: 2026, minor: 7, patch: 1),
-        targetPlatforms: [.iPhone, .iPad, .mac],
-        osRequirements: WhatsNewOSRequirements(
-            iOS: WhatsNewOSVersionRange(
-                minimum: WhatsNewOSVersion(major: 15),
-                maximum: .init(major: 16, minor: 3, patch: 9)
-            ),
-            macOS: WhatsNewOSVersionRange(
-                minimum: WhatsNewOSVersion(major: 10),
-                maximum: .init(major: 11, minor: 9, patch: 9)
-            )
-        ),
-        title: L10n.WhatsNew.AppSupportUpdate.title,
-        items: [
-            .init(
-                id: "drop-support",
-                title: L10n.WhatsNew.AppSupportUpdate.itemTitle,
-                body: L10n.WhatsNew.AppSupportUpdate.itemBody,
-                icon: .sfSymbol(.iphoneSlash),
-                destination: .link(AppConstants.WebURLs.appleDropSupportiOS15)
-            ),
-        ]
-    )
+    // White-label build: upstream release announcements are not shown; set a brand release here when needed.
+    static let release: WhatsNewRelease? = nil
 }
