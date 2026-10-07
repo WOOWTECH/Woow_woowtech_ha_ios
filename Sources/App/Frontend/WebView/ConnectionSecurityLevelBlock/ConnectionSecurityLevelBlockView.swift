@@ -68,11 +68,11 @@ struct ConnectionSecurityLevelBlockView: View {
                         case .notDetermined:
                             Current.Log.info("Location permission not determined")
                         case .denied, .restricted:
-                            URLOpener.shared.open(
-                                URL(string: UIApplication.openSettingsURLString)!,
-                                options: [:],
-                                completionHandler: nil
-                            )
+                            // ⚠️ 不能在這裡自己開 iOS 設定。這個通知可能來自使用者剛在系統對話框按
+                            //    「不允許」,也可能是 CLLocationManager 自己觸發的授權回呼,兩者都不是
+                            //    「使用者要去設定」。自動跳過去違反 App Store 審查指南 5.1.1(iv)
+                            //    (Apple 2026-09-23 以同一條退件)。只更新畫面,由使用者自己按位置那一列。
+                            viewModel.loadRequirements()
                         case .authorizedWhenInUse, .authorizedAlways:
                             // Handle permission change - reload requirements to update UI
                             viewModel.loadRequirements()
@@ -116,7 +116,18 @@ struct ConnectionSecurityLevelBlockView: View {
                                 case .homeNetworkMissing:
                                     showHomeNetworkSettings = true
                                 case .locationPermission:
-                                    Current.locationManager.requestLocationPermission()
+                                    // 權限「在按下之前」就已被拒:這是使用者自己按了這一列,
+                                    // 系統對話框也不會再出現,才帶去 iOS 設定。其餘情況交給系統對話框。
+                                    switch Current.location.permissionStatus {
+                                    case .denied, .restricted:
+                                        URLOpener.shared.open(
+                                            URL(string: UIApplication.openSettingsURLString)!,
+                                            options: [:],
+                                            completionHandler: nil
+                                        )
+                                    default:
+                                        Current.locationManager.requestLocationPermission()
+                                    }
                                 case .notOnHomeNetwork:
                                     Current.Log.info("No action for notOnHomeNetwork requirement")
                                 }
