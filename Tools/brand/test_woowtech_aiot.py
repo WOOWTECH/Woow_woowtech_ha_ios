@@ -192,6 +192,19 @@ class WoowtechAiotContractTests(unittest.TestCase):
                     self.assertEqual(re.findall(r"%(?:\d+\$)?[@a-zA-Z]", strings[key]),
                                      re.findall(r"%(?:\d+\$)?[@a-zA-Z]", english[key]))
 
+    def test_welcome_body_never_claims_woowtech_aiot_is_open_source(self):
+        # Upstream says Home Assistant is open source; the rebrand turned that into a claim about our
+        # product in 32 locales. Locales we cannot proofread drop the key and fall back to en.
+        claim = re.compile(r"open.?source|開源|开源|オープンソース|açık kaynak|ανοι[κχ]τού κώδικα", re.I)
+        for path in sorted((ROOT / "Sources/App/Resources").glob("*.lproj/Localizable.strings")):
+            strings = json.loads(subprocess.check_output(["plutil", "-convert", "json", "-o", "-", str(path)]))
+            body = strings.get("onboarding.welcome.updated.body")
+            if body is None:
+                continue
+            with self.subTest(locale=path.parent.name):
+                self.assertIn("woowtech aiot", body)
+                self.assertIsNone(claim.search(body), body)
+
     def test_owner_approved_manual_url_copy(self):
         for locale, title in (
                 ("zh-Hant", "woowtech aiot 網址是什麼"),
