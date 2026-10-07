@@ -1029,9 +1029,6 @@
 "onboarding.welcome.primary_button" = "Σύνδεση με το woowtech aiot μου";
 "onboarding.welcome.secondary_button" = "Ξεκινώντας";
 "onboarding.welcome.title" = "Καλώς ορίσατε στο woowtech aiot %@!";
-"onboarding.welcome.updated.body" = "Πρόσβαση στον woowtech aiot server εν κινήσει. \
-\
-Το woowtech aiot είναι ανοικτού κώδικα, υποστηρίζει την προστασία της ιδιωτικής ζωής και λειτουργεί τοπικά στο σπίτι σας.";
 "onboarding.welcome.updated.secondary_button" = "Μάθετε περισσότερα";
 "open_label" = "Άνοιγμα";
 "permission.notification.body" = "Ενεργοποιήστε τις ειδοποιήσεις και μάθετε τι συμβαίνει στο σπίτι σας, από την ανίχνευση διαρροών έως τις πόρτες που έχουν μείνει ανοιχτές, έχετε πλήρη έλεγχο του τι σας λέει.";

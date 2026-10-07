@@ -1028,9 +1028,6 @@ A Home Assistant egy ingyenes és nyílt forráskódú otthoni automatizálási 
 "onboarding.welcome.primary_button" = "Csatlakozás a saját woowtech aiot rendszeremhez";
 "onboarding.welcome.secondary_button" = "Első lépések";
 "onboarding.welcome.title" = "%@ woowtech aiot üdvözli Önt!";
-"onboarding.welcome.updated.body" = "Érje el a woowtech aiot szerverét útközben is.\
-\
-A woowtech aiot nyílt forráskódú, az adatvédelem mellett áll ki és helyileg fut az otthonában.";
 "onboarding.welcome.updated.secondary_button" = "További információ";
 "open_label" = "Megnyitás";
 "permission.notification.body" = "Engedélyezze az értesítéseket, és kapjon tájékoztatást otthona eseményeiről – a szivárgások és nyitva hagyott ajtók észlelésétől kezdve teljes mértékben Ön szabályozza, miről kap értesítést.";

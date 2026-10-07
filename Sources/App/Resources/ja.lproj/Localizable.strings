@@ -1028,9 +1028,6 @@ Home Assistantは、ローカルコントロールとプライバシーに重点
 "onboarding.welcome.primary_button" = "woowtech aiotに接続";
 "onboarding.welcome.secondary_button" = "はじめる";
 "onboarding.welcome.title" = "woowtech aiotへようこそ %@！";
-"onboarding.welcome.updated.body" = "外出先からwoowtech aiotサーバーにアクセスできます。 \
-\
-woowtech aiotはオープンソースで、プライバシーを擁護し、あなたの家でローカルに動作します。";
 "onboarding.welcome.updated.secondary_button" = "もっと詳しく知る";
 "open_label" = "オープン";
 "permission.notification.body" = "通知を有効にすると、水漏れの検出からドアの開け放しまで、自宅で何が起こっているかを把握でき、通知内容を完全に制御できます。";

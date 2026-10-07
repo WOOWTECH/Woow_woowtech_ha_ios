@@ -1029,9 +1029,6 @@ Home Assistant는 로컬 제어와 개인정보 보호를 중시하는 무료 �
 "onboarding.welcome.primary_button" = "내 woowtech aiot에 연결";
 "onboarding.welcome.secondary_button" = "시작하기";
 "onboarding.welcome.title" = "woowtech aiot %@에 오신것을 환영합니다!";
-"onboarding.welcome.updated.body" = "어디서든 woowtech aiot 서버에 접근하세요. \
-\
-woowtech aiot는 오픈 소스이며 개인정보 보호를 중시하고 집 안에서 로컬로 실행됩니다.";
 "onboarding.welcome.updated.secondary_button" = "더 알아보기";
 "open_label" = "열기";
 "permission.notification.body" = "알림을 활성화하고 누수 감지부터 열린 문까지 집에서 일어나는 일을 받아보세요. 어떤 내용을 알려줄지는 사용자가 완전히 제어할 수 있습니다.";

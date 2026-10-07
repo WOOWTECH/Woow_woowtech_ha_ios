@@ -1029,9 +1029,6 @@ Home Assistant er gratis og open source hjemmeautomatiseringssoftware med fokus 
 "onboarding.welcome.primary_button" = "Opret forbindelse til min woowtech aiot";
 "onboarding.welcome.secondary_button" = "Kom godt i gang";
 "onboarding.welcome.title" = "Velkommen til woowtech aiot %@!";
-"onboarding.welcome.updated.body" = "Tilgå din woowtech aiot-server, når du er på farten. \
-\
-woowtech aiot er open source, går ind for privatlivets fred og kører lokalt i dit hjem.";
 "onboarding.welcome.updated.secondary_button" = "Lær mere";
 "open_label" = "Åbn";
 "permission.notification.body" = "Aktivér notifikationer, og få styr på, hvad der sker i dit hjem – lige fra at opdage lækager til åbne døre. Du har fuld kontrol over, hvad de fortæller dig.";

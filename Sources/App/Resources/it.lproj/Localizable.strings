@@ -1029,9 +1029,6 @@ Da remoto quando sei pronto.";
 "onboarding.welcome.primary_button" = "Connettiti al mio woowtech aiot";
 "onboarding.welcome.secondary_button" = "Per iniziare";
 "onboarding.welcome.title" = "Benvenuto in woowtech aiot %@ !";
-"onboarding.welcome.updated.body" = "Accedi al tuo server woowtech aiot ovunque ti trovi. \
-\
-woowtech aiot è un software open source, difende la privacy e funziona localmente a casa tua.";
 "onboarding.welcome.updated.secondary_button" = "Scopri di più";
 "open_label" = "Aperto";
 "permission.notification.body" = "Attiva le notifiche e rimani aggiornato su ciò che accade in casa tua: dal rilevamento di perdite alle porte lasciate aperte, hai il pieno controllo su ciò che ti viene segnalato.";

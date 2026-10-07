@@ -1029,9 +1029,6 @@ Home Assistant je bezplatný a otevřený software pro domácí automatizaci se 
 "onboarding.welcome.primary_button" = "Připojit k mému woowtech aiotovi";
 "onboarding.welcome.secondary_button" = "Začínáme";
 "onboarding.welcome.title" = "Vítejte v woowtech aiotovi %@!";
-"onboarding.welcome.updated.body" = "Přistupujte k serveru woowtech aiot na cestách.\
- \
-woowtech aiot je open source, chrání soukromí a běží lokálně u vás doma.";
 "onboarding.welcome.updated.secondary_button" = "Více informací";
 "open_label" = "Otevřít";
 "permission.notification.body" = "Povolte oznámení a získejte přehled o tom, co se děje ve vaší domácnosti; od detekce netěsností až po otevřené dveře - máte plnou kontrolu nad vším.";

@@ -1028,9 +1028,6 @@ Home Assistant adalah perangkat lunak otomasi rumah gratis dan sumber terbuka de
 "onboarding.welcome.primary_button" = "Hubungkan ke woowtech aiot saya";
 "onboarding.welcome.secondary_button" = "Memulai";
 "onboarding.welcome.title" = "Selamat datang di woowtech aiot %@!";
-"onboarding.welcome.updated.body" = "Akses server woowtech aiot Anda di mana saja. \
-\
-woowtech aiot bersifat sumber terbuka, mendukung privasi, dan berjalan secara lokal di rumah Anda.";
 "onboarding.welcome.updated.secondary_button" = "Pelajari lebih lanjut";
 "open_label" = "Buka";
 "permission.notification.body" = "Aktifkan notifikasi dan ketahui apa yang terjadi di rumah Anda, mulai dari mendeteksi kebocoran hingga pintu yang dibiarkan terbuka, Anda memiliki kendali penuh atas apa yang diberitahukannya kepada Anda.";

@@ -1032,7 +1032,7 @@
 "onboarding.welcome.secondary_button" = "入门";
 "onboarding.welcome.title" = "欢迎使用 woowtech aiot %@ ！";
 "onboarding.welcome.updated.body" = "随时随地访问您的 woowtech aiot 服务器。\
-woowtech aiot 是开源的，倡导隐私保护，并在您的家中本地运行。";
+woowtech aiot 倡导隐私与信息安全保护，并在您的家中本地运行。";
 "onboarding.welcome.updated.secondary_button" = "了解更多";
 "open_label" = "打开";
 "permission.notification.body" = "启用通知并获取您家中发生的情况，从检测到泄漏到敞开的门，您可以完全控制它告诉您的内容。";

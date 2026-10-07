@@ -1029,9 +1029,6 @@ Home Assistant is gratis en open source domotica-software met een focus op lokal
 "onboarding.welcome.primary_button" = "Maak verbinding met mijn woowtech aiot";
 "onboarding.welcome.secondary_button" = "Aan de slag";
 "onboarding.welcome.title" = "Welkom bij woowtech aiot %@!";
-"onboarding.welcome.updated.body" = "Onderweg toegang tot je woowtech aiot-server. \
-\
-woowtech aiot is open source, komt op voor privacy en draait lokaal bij jou in huis.";
 "onboarding.welcome.updated.secondary_button" = "Meer informatie";
 "open_label" = "Open";
 "permission.notification.body" = "Schakel meldingen in en krijg te horen wat er in je huis gebeurt, van het detecteren van lekkages tot openstaande deuren, je hebt volledige controle over wat er gemeld wordt.";

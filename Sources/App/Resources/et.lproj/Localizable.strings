@@ -1029,9 +1029,6 @@ Sildid toimivad igas seadmes, kuhu on paigaldatud woowtech aiot, millel on nende
 "onboarding.welcome.primary_button" = "woowtech aiotiga ühenduse loomine";
 "onboarding.welcome.secondary_button" = "Alustamine";
 "onboarding.welcome.title" = "Tere tulemast woowtech aioti %@!";
-"onboarding.welcome.updated.body" = "Pääse oma woowtech aiot serverile ligi liikvel olles. \
- \
- woowtech aiot on avatud lähtekoodiga, kaitseb privaatsust ja töötab lokaalselt sinu kodus.";
 "onboarding.welcome.updated.secondary_button" = "Lisateave";
 "open_label" = "Avatud";
 "permission.notification.body" = "Luba märguanded ja saa teada, mis sinu kodus toimub – lekete tuvastamisest kuni lahti jäänud uste tuvastamiseni – sul on täielik kontroll selle üle, mida see sulle näitab.";

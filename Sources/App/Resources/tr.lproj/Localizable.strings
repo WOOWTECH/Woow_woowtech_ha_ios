@@ -1031,7 +1031,7 @@
 "onboarding.welcome.title" = "woowtech aiot'a Hoş Geldiniz %@!";
 "onboarding.welcome.updated.body" = "Hareket halindeyken woowtech aiot sunucunuza erişin. \
 \
-woowtech aiot açık kaynaklıdır, gizliliği savunur ve evinizde yerel olarak çalışır.";
+woowtech aiot gizliliği ve bilgi güvenliğini savunur ve evinizde yerel olarak çalışır.";
 "onboarding.welcome.updated.secondary_button" = "Daha fazla bilgi edin";
 "open_label" = "Açık";
 "permission.notification.body" = "Bildirimleri etkinleştirin ve evinizde neler olup bittiğini öğrenin; sızıntıları tespit etmekten açık bırakılan kapılara kadar, size ne söylediği konusunda tam kontrole sahip olun.";

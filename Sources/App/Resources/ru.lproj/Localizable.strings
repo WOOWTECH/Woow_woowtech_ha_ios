@@ -1029,9 +1029,6 @@ Home Assistant - это бесплатное программное обеспе
 "onboarding.welcome.primary_button" = "Подключиться к моему woowtech aiot";
 "onboarding.welcome.secondary_button" = "Начало работы";
 "onboarding.welcome.title" = "Добро пожаловать в woowtech aiot %@!";
-"onboarding.welcome.updated.body" = "Получите доступ к серверу woowtech aiot, где бы вы ни находились. \
- \
-woowtech aiot — это приложение с открытым исходным кодом, которое обеспечивает конфиденциальность и работает локально у вас дома.";
 "onboarding.welcome.updated.secondary_button" = "Узнать больше";
 "open_label" = "Открыто";
 "permission.notification.body" = "Включите уведомления и получайте информацию о том, что происходит у вас дома: от обнаружения утечек до незакрытых дверей. Вы полностью контролируете то, что вам сообщает система.";

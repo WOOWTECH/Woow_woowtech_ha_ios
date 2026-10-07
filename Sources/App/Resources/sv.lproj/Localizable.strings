@@ -1024,9 +1024,6 @@ Home Assistant är gratis och öppen källkod för hemautomatisering med fokus p
 "onboarding.welcome.primary_button" = "Anslut till min woowtech aiot";
 "onboarding.welcome.secondary_button" = "Så här kommer du igång";
 "onboarding.welcome.title" = "Välkommen till woowtech aiot %@!";
-"onboarding.welcome.updated.body" = "Få åtkomst till din woowtech aiot-server när du är på språng. \
-\
-woowtech aiot är öppen källkod, förespråkar integritet och körs lokalt i ditt hem.";
 "onboarding.welcome.updated.secondary_button" = "Läs mer";
 "open_label" = "Öppen";
 "permission.notification.body" = "Tillåt aviseringar och få reda på vad som händer i ditt hem, från upptäckt av läckage till dörrar som är öppna. Du har full kontroll över vad som meddelas till dig.";

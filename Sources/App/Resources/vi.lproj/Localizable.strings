@@ -1029,9 +1029,6 @@ Home Assistant là phần mềm tự động hóa gia đình mã nguồn mở v�
 "onboarding.welcome.primary_button" = "Kết nối với woowtech aiot của tôi";
 "onboarding.welcome.secondary_button" = "Bắt đầu";
 "onboarding.welcome.title" = "Chào mừng bạn đến với woowtech aiot%@!";
-"onboarding.welcome.updated.body" = "Access your woowtech aiot server on the go. \
-\
-woowtech aiot is open source, advocates for privacy and runs locally in your home.";
 "onboarding.welcome.updated.secondary_button" = "Learn more";
 "open_label" = "Mở";
 "permission.notification.body" = "Bật thông báo và nhận thông tin về những gì đang xảy ra trong nhà bạn, từ phát hiện rò rỉ đến cửa ra vào để mở, bạn có toàn quyền kiểm soát những thông tin mà nó cung cấp.";

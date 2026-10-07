@@ -1029,9 +1029,6 @@ Home Assistant est un logiciel de domotique gratuit et open source axé sur le c
 "onboarding.welcome.primary_button" = "Se connecter à mon woowtech aiot";
 "onboarding.welcome.secondary_button" = "Premiers pas";
 "onboarding.welcome.title" = "Bienvenue dans woowtech aiot %@ !";
-"onboarding.welcome.updated.body" = "Accédez à votre serveur woowtech aiot où que vous soyez.\
-\
-woowtech aiot est open source, défend la confidentialité et fonctionne localement chez vous.";
 "onboarding.welcome.updated.secondary_button" = "En savoir plus";
 "open_label" = "Ouvrir";
 "permission.notification.body" = "Activez les notifications pour savoir ce qui se passe chez vous, de la détection de fuites aux portes restées ouvertes. Vous gardez le contrôle total de ce qu'elles vous signalent.";
