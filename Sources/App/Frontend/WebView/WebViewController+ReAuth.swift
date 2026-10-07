@@ -2,6 +2,23 @@ import PromiseKit
 import Shared
 import UIKit
 
+extension WebViewController: OnboardingStateObserver {
+    /// 伺服器拒絕這台 server 的 refresh token 時(例如 `/auth/token` 回 400/401),
+    /// 顯示重新認證的空狀態。
+    ///
+    /// 這段是回移上游 PR #5246(`b53b98986`, 2026-07-27)。本 fork 的分支點在它之前,
+    /// 所以一直沒有這段 —— `showReAuthPopup` 從 2026-02-23 就存在但**沒有任何呼叫者**,
+    /// 導致 token 失效時使用者只會看到白畫面(2026-09-16 於 iPad 實機確認)。
+    ///
+    /// `OnboardingStateObservation` 可能從非主執行緒通知,所以先跳到 main actor 再碰 web view。
+    nonisolated func onboardingStateDidChange(to state: OnboardingState) {
+        guard case let .needed(.unauthenticated(serverId, code)) = state else { return }
+        Task { @MainActor [weak self] in
+            self?.showReAuthPopup(serverId: serverId, code: code)
+        }
+    }
+}
+
 extension WebViewController {
     func performReauthentication(using urlType: ConnectionInfo.URLType) {
         let connectionInfo = server.info.connection

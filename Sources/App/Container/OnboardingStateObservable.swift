@@ -215,6 +215,12 @@ final class OnboardingStateObservable: ObservableObject {
             case .unauthenticated:
                 // Re-authentication is surfaced by the active WebViewController itself, so keep showing
                 // the web view rather than swapping the top-level screen.
+                //
+                // ⚠️ 這個 `break` 的正確性**完全依賴** `WebViewController` 有把自己註冊成
+                //    `OnboardingStateObserver`(見 `WebViewController.viewDidLoad` 與
+                //    `WebViewController+ReAuth.swift`)。那邊一旦漏掉,這裡就變成「兩邊都不處理」,
+                //    使用者會看到白畫面而不是重新登入畫面 —— 2026-09-16 於 iPad 實機發生過。
+                //    要改這裡之前,先確認那條路還在。
                 break
             }
         case .complete:

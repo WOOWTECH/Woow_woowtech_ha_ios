@@ -207,6 +207,16 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
         observeConnectionNotifications()
         setupKioskModeObservation()
+        // 弱參考持有;伺服器拒絕這台 server 的 refresh token 時,用來顯示重新認證畫面。
+        //
+        // ⚠️ **這一行不能拿掉。** `OnboardingStateObservable`(容器層)對
+        //    `.needed(.unauthenticated)` 刻意不動作,註解寫「由 WebViewController 自己處理」——
+        //    少了這裡的註冊,那個假設就不成立,整條重新認證的路會靜靜地斷掉:
+        //    `showReAuthPopup` 不會被呼叫 → `connectionState` 進不了 `.authInvalid`
+        //    → 空狀態不顯示 → WebView 一直等 `externalAuthSetToken` → **使用者看到白畫面**。
+        //    迴歸測試:`WebViewControllerTests`
+        //    `.testServerRejectingRefreshTokenSurfacesReAuthenticationInsteadOfBlankWebView`
+        Current.onboardingObservation.register(observer: self)
 
         let statusBarView = setupStatusBarView()
 
