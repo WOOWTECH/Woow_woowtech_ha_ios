@@ -216,7 +216,12 @@ open class Snapshot: NSObject {
 
         homeDir = usersDir.appendingPathComponent(user)
         #else
-        #if arch(i386) || arch(x86_64)
+        // ⚠️ 上游這裡寫的是 `#if arch(i386) || arch(x86_64)`，也就是**只認 Intel 模擬器**。
+        //    在 Apple Silicon 上模擬器是 arm64，會直接掉進下面的
+        //    `throw SnapshotError.cannotRunOnPhysicalDevice`（log 裡的 `SnapshotError error 4`）。
+        //    後果很隱蔽：`setupSnapshot` 只 NSLog 一行就吞掉錯誤，`snapshot()` 照常回傳，
+        //    測試**會通過**，但一張圖都沒寫出來。改用 targetEnvironment(simulator) 判斷。
+        #if targetEnvironment(simulator)
         guard let simulatorHostHome = ProcessInfo().environment["SIMULATOR_HOST_HOME"] else {
             throw SnapshotError.cannotFindSimulatorHomeDirectory
         }
