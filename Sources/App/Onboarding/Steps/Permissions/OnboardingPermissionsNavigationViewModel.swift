@@ -285,6 +285,18 @@ extension OnboardingPermissionsNavigationViewModel: CLLocationManagerDelegate {
             disableLocationSensor()
             if locationPermissionContext == .lessSecureLocalConnection {
                 applyLocationPermissionNeeds()
+            } else if locationPermissionContext == .shareWithHomeAssistant {
+                // ⚠️ 必須推進流程。App Store 審查指南 5.1.1(iv) 不允許在系統對話框之前
+                //    提供繞過它的出口,所以位置頁的「Do not share my location」已移除,
+                //    系統對話框的「不允許」成為唯一的拒絕入口。
+                //
+                //    此處若不推進,使用者會卡在位置頁:授權狀態已是 .denied,僅存的
+                //    主按鈕會走 requestLocationPermission() 的 .denied 分支去開啟
+                //    iOS 設定 App,再也回不到上線流程。
+                //
+                //    這裡刻意不呼叫 applyLocationPermissionNeeds() —— 那會連帶
+                //    enableLocationSensor(),與使用者剛表達的拒絕相反。
+                nextStep()
             }
         case .authorizedAlways:
             // Full location access granted - no additional action needed

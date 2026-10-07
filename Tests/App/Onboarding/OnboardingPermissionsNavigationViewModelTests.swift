@@ -366,6 +366,30 @@ struct OnboardingPermissionsNavigationViewModelLocationDelegateTests {
         #expect(locationPrivacy == .never)
     }
 
+    @Test("Location manager authorization change - denied while sharing with Home Assistant advances")
+    func locationManagerAuthorizationChangeDeniedWhileSharingAdvances() async throws {
+        // App Store 審查指南 5.1.1(iv):上線流程的位置頁不得提供繞過系統對話框的出口,
+        // 因此「Do not share my location」那顆次要按鈕已移除,系統對話框的「不允許」
+        // 成為唯一的拒絕入口。
+        //
+        // ⚠️ 這裡若不推進流程,使用者按下「不允許」就會卡在位置頁:此時授權狀態已是
+        //    .denied,僅存的主按鈕會走 requestLocationPermission() 的 .denied 分支
+        //    去開啟 iOS 設定 App,永遠回不到上線流程。
+        let server = ServerFixture.standard
+        let viewModel = OnboardingPermissionsNavigationViewModel(onboardingServer: server)
+        viewModel.locationPermissionContext = .shareWithHomeAssistant
+
+        let mockLocationManager = MockCLLocationManager()
+        mockLocationManager.authorizationStatus = .denied
+
+        viewModel.locationManagerDidChangeAuthorization(mockLocationManager)
+
+        // 拒絕時仍然關閉位置感測器——這一點不能因為推進流程而失效。
+        #expect(server.info.setting(for: .locationPrivacy) == .never)
+        // 而且流程必須往前走。
+        #expect(viewModel.currentStepIndex == 1)
+    }
+
     @Test("Location manager authorization change - denied after less secure selection advances")
     func locationManagerAuthorizationChangeDeniedAfterLessSecureSelectionAdvances() async throws {
         let server = ServerFixture.standard

@@ -69,9 +69,6 @@ struct OnboardingPermissionsNavigationView: View {
     private var location: some View {
         LocationPermissionView {
             viewModel.requestLocationPermissionToShareWithHomeAssistant()
-        } secondaryAction: {
-            viewModel.disableLocationSensor()
-            viewModel.nextStep()
         }
     }
 
