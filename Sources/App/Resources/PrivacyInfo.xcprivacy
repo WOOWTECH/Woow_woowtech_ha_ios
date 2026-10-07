@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy manifest for the phone app target (App).
+
+  SCOPE: required-reason API declarations only. NSPrivacyTracking,
+  NSPrivacyTrackingDomains and NSPrivacyCollectedDataTypes are deliberately
+  ABSENT rather than declared empty, because the data-flow evidence for this
+  build is not yet complete. Omission is not a claim of "none"; see the
+  handback report for the exact unresolved fields.
+
+  SOURCE MAPPING (first-party code compiled into the App target):
+
+    NSPrivacyAccessedAPICategoryUserDefaults -> 1C8F.1
+      UserDefaults(suiteName: AppConstants.AppGroupID), shared with the app
+      extensions via the App Group container:
+        AppDelegate.swift:23
+        Utilities/Utils.swift:50
+
+    NSPrivacyAccessedAPICategoryUserDefaults -> CA92.1
+      UserDefaults.standard, accessed only within this app's own container:
+        AppDelegate.swift:345
+        Utilities/Utils.swift:28,29  (reset-on-uninstall housekeeping)
+
+    The six embedded app extensions (Share, Widgets, PushProvider,
+    NotificationContent, Intents, NotificationService) contain no first-party
+    required-reason API use in their own sources; they link the dynamic
+    Shared.framework, which carries its own manifest. They therefore do not
+    receive a copy of this file. This is a SOURCE-LEVEL determination;
+    per-binary symbol coverage has not been verified in this lane.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

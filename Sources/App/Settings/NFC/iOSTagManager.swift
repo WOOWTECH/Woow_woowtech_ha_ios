@@ -47,36 +47,52 @@ class TagActivityManager: TagManager {
         .generic
     }
 
-    fileprivate static func url(for identifier: String) -> URL {
+    static func url(for identifier: String) -> URL? {
+        guard isValidTagIdentifier(identifier) else { return nil }
+
         var components = URLComponents()
         components.scheme = "https"
-        components.host = "www.home-assistant.io"
+        components.host = "aiot.woowtech.io"
         components.path = "/tag/" + identifier
-        return components.url!
+        return components.url
     }
 
-    fileprivate static func identifier(from url: URL) -> String? {
-        guard isSupportedTagHost(url.host?.lowercased()) else {
+    static func identifier(from url: URL) -> String? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.scheme?.lowercased() == "https",
+              components.user == nil,
+              components.password == nil,
+              components.port == nil,
+              components.query == nil,
+              components.fragment == nil,
+              isSupportedTagHost(components.host?.lowercased()) else {
             return nil
         }
 
-        if url.pathComponents.starts(with: ["/", "tag"]) {
-            // ["/", "tag", "5f0ba733-172f-430d-a7f8-e4ad940c88d7"] for example
-            let value = url.pathComponents.dropFirst(2).joined(separator: "/")
-            if !value.isEmpty {
-                return value
-            } else {
-                return nil
-            }
-        } else {
+        let encodedParts = components.percentEncodedPath.split(separator: "/", omittingEmptySubsequences: false)
+        guard encodedParts.count == 3,
+              encodedParts[0].isEmpty,
+              encodedParts[1] == "tag",
+              let identifier = String(encodedParts[2]).removingPercentEncoding,
+              isValidTagIdentifier(identifier) else {
             return nil
         }
+        return identifier
+    }
+
+    private static func isValidTagIdentifier(_ identifier: String) -> Bool {
+        !identifier.isEmpty
+            && identifier != "."
+            && identifier != ".."
+            && !identifier.contains("/")
+            && !identifier.contains("?")
+            && !identifier.contains("#")
     }
 
     private static func isSupportedTagHost(_ host: String?) -> Bool {
         guard let host else { return false }
 
-        var hosts = ["www.home-assistant.io"]
+        var hosts = ["aiot.woowtech.io", "www.home-assistant.io"]
         if Current.appConfiguration == .debug {
             hosts.append("next.home-assistant.io")
         }
@@ -106,8 +122,9 @@ class iOSTagManager: TagActivityManager {
     }
 
     override func writeNFC(value: String) -> Promise<String> {
-        guard let uriPayload = NFCNDEFPayload.wellKnownTypeURIPayload(url: Self.url(for: value)),
-              let aarPayload = NFCNDEFPayload.androidPackage(payload: "io.homeassistant.companion.android") else {
+        guard let tagURL = Self.url(for: value),
+              let uriPayload = NFCNDEFPayload.wellKnownTypeURIPayload(url: tagURL),
+              let aarPayload = NFCNDEFPayload.androidPackage(payload: "com.woowtech.aiot") else {
             return .init(error: TagManagerError.notHomeAssistantTag)
         }
 

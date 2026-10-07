@@ -8,10 +8,8 @@ import XCTest
 final class WebViewExternalMessageHandlerTests: XCTestCase {
     private var sut: WebViewExternalMessageHandler!
     private var mockWebViewController: MockWebViewController!
-    private var originalMatterCommission: ((Server) -> Promise<String?>)!
 
     override func setUp() async throws {
-        originalMatterCommission = Current.matter.commission
         mockWebViewController = MockWebViewController()
         sut = WebViewExternalMessageHandler(
             improvManager: ImprovManager.shared
@@ -20,8 +18,6 @@ final class WebViewExternalMessageHandlerTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        Current.matter.commission = originalMatterCommission
-        originalMatterCommission = nil
         sut = nil
         mockWebViewController = nil
     }
@@ -128,75 +124,65 @@ final class WebViewExternalMessageHandlerTests: XCTestCase {
         XCTAssertEqual(mockWebViewController.shownBannerRequests.last?.message, "abc")
     }
 
-    @MainActor func testHandleExternalMessageStoreInPlatformKeychainOpenTransferFlow() {
-        let dictionary: [String: Any] = [
-            "id": 1,
-            "message": "",
-            "command": "",
-            "type": "thread/store_in_platform_keychain",
-            "payload": [
-                "mac_extended_address": "abc",
-                "active_operational_dataset": "abc2",
-            ],
-        ]
+    @MainActor func testNativeCommissioningRequestsAreUnsupportedWithoutPresentingUI() throws {
+        for (index, type) in [
+            "matter/commission",
+            "thread/import_credentials",
+            "thread/store_in_platform_keychain",
+        ].enumerated() {
+            let sent = expectation(description: "Unsupported response for \(type)")
+            sent.expectedFulfillmentCount = type == "matter/commission" ? 2 : 1
+            mockWebViewController.evaluateJavaScriptExpectation = sent
+            mockWebViewController.evaluatedJavaScriptScripts = []
 
-        sut.handleExternalMessage(dictionary)
+            sut.handleExternalMessage([
+                "id": index,
+                "type": type,
+                "payload": [
+                    "mac_extended_address": "unused-address",
+                    "active_operational_dataset": "unused-dataset",
+                    "extended_pan_id": "unused-pan-id",
+                ],
+            ])
 
-        XCTAssertTrue(
-            mockWebViewController
-                .overlayedController is UIHostingController<
-                    ThreadCredentialsSharingView<ThreadTransferCredentialToKeychainViewModel>
-                >
-        )
-        XCTAssertEqual(mockWebViewController.overlayedController?.modalTransitionStyle, .crossDissolve)
-        XCTAssertEqual(mockWebViewController.overlayedController?.modalPresentationStyle, .overFullScreen)
-        XCTAssertEqual(mockWebViewController.overlayedController?.view.backgroundColor, .clear)
+            wait(for: [sent], timeout: 1)
+            let messages = try mockWebViewController.evaluatedJavaScriptScripts.map(externalBusMessage(from:))
+            let result = try XCTUnwrap(messages.first { $0["type"] as? String == "result" })
+            XCTAssertEqual(result["id"] as? Int, index)
+            XCTAssertEqual(result["success"] as? Bool, false)
+            XCTAssertEqual((result["result"] as? [String: Any])?["error"] as? String, "unsupported")
+            if type == "matter/commission" {
+                let finish = try XCTUnwrap(messages.first { $0["type"] as? String == "command" })
+                XCTAssertEqual(finish["command"] as? String, "matter/commission/finish")
+                XCTAssertEqual((finish["payload"] as? [String: Any])?["success"] as? Bool, false)
+            }
+            XCTAssertNil(mockWebViewController.overlayedController)
+        }
     }
 
-    @MainActor func testHandleExternalMessageImportThreadCredentialsStartImportFlow() {
-        let dictionary: [String: Any] = [
-            "id": 1,
-            "message": "",
-            "command": "",
-            "type": "thread/import_credentials",
-        ]
+    @MainActor func testMatterCommissionWithoutIDOrPayloadStillSendsFailureFinish() throws {
+        let sent = expectation(description: "Failure finish for old fire-and-forget frontend")
+        mockWebViewController.evaluateJavaScriptExpectation = sent
+        sut.handleExternalMessage(["type": "matter/commission"])
 
-        sut.handleExternalMessage(dictionary)
-
-        XCTAssertTrue(
-            mockWebViewController
-                .overlayedController is UIHostingController<
-                    ThreadCredentialsSharingView<ThreadTransferCredentialToHAViewModel>
-                >
-        )
-        XCTAssertEqual(mockWebViewController.overlayedController?.modalTransitionStyle, .crossDissolve)
-        XCTAssertEqual(mockWebViewController.overlayedController?.modalPresentationStyle, .overFullScreen)
-        XCTAssertEqual(mockWebViewController.overlayedController?.view.backgroundColor, .clear)
+        wait(for: [sent], timeout: 1)
+        let message = try externalBusMessage(from: XCTUnwrap(mockWebViewController.lastEvaluatedJavaScriptScript))
+        XCTAssertEqual(message["command"] as? String, "matter/commission/finish")
+        XCTAssertEqual((message["payload"] as? [String: Any])?["success"] as? Bool, false)
+        XCTAssertEqual(mockWebViewController.evaluateJavaScriptCallCount, 1)
+        XCTAssertNil(mockWebViewController.overlayedController)
     }
 
-    @MainActor func testHandleExternalMessageMatterCommissionSendsFinishMessageWithDeviceName() throws {
-        let deviceName = "Kitchen Plug"
-        let expectation = expectation(description: "Matter commission finish message sent")
-        mockWebViewController.evaluateJavaScriptExpectation = expectation
-        Current.matter.commission = { _ in .value(deviceName) }
+    @MainActor func testThreadCredentialRequestWithoutPayloadIsRejected() throws {
+        let sent = expectation(description: "Missing credentials cannot leave a request pending")
+        mockWebViewController.evaluateJavaScriptExpectation = sent
+        sut.handleExternalMessage(["id": 42, "type": "thread/store_in_platform_keychain"])
 
-        let dictionary: [String: Any] = [
-            "id": 1,
-            "message": "",
-            "command": "",
-            "type": "matter/commission",
-        ]
-
-        sut.handleExternalMessage(dictionary)
-
-        wait(for: [expectation], timeout: 1)
-        let script = try XCTUnwrap(mockWebViewController.lastEvaluatedJavaScriptScript)
-        let message = try externalBusMessage(from: script)
-        let payload = try XCTUnwrap(message["payload"] as? [String: Any])
-
-        XCTAssertEqual(message["type"] as? String, "command")
-        XCTAssertEqual(message["command"] as? String, WebViewExternalBusOutgoingMessage.matterCommissionFinish.rawValue)
-        XCTAssertEqual(payload["name"] as? String, deviceName)
+        wait(for: [sent], timeout: 1)
+        let message = try externalBusMessage(from: XCTUnwrap(mockWebViewController.lastEvaluatedJavaScriptScript))
+        XCTAssertEqual(message["id"] as? Int, 42)
+        XCTAssertEqual(message["success"] as? Bool, false)
+        XCTAssertNil(mockWebViewController.overlayedController)
     }
 
     @MainActor func testHandleExternalMessageShowAssistShowsAssist() {

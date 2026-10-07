@@ -86,7 +86,6 @@
 	<array>
 		<string>_hass-mobile-app._tcp</string>
 		<string>_home-assistant._tcp</string>
-		<string>_matter._tcp</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Take photos and send them to your Home Assistant server.</string>
@@ -119,8 +118,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Record audio using your Home Assistant frontend.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Motion is used to improve location updates with current motion type, as well as
-			provide basic pedometer data.</string>
+	<string>Motion access lets the app read barometric pressure from your device and report it to your own hub.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Photo Library access is needed to allow saving photos from the web view.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

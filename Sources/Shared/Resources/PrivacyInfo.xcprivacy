@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy manifest for Shared.framework (iOS).
+
+  SCOPE: required-reason API declarations only. NSPrivacyTracking,
+  NSPrivacyTrackingDomains and NSPrivacyCollectedDataTypes are deliberately
+  ABSENT rather than declared empty, because the data-flow evidence for this
+  build is not yet complete. Omission is not a claim of "none"; see the
+  handback report for the exact unresolved fields.
+
+  SOURCE MAPPING (first-party code compiled into Shared-iOS):
+
+    NSPrivacyAccessedAPICategoryUserDefaults -> 1C8F.1
+      UserDefaults(suiteName: AppConstants.AppGroupID), shared with the app
+      and its app extensions via the App Group container:
+        Settings/SettingsStore.swift:10
+        Environment/Environment.swift:370
+        Environment/AppConstants.swift:357
+        LiveActivity/LiveActivityRegistry.swift:595,600,607
+        LiveActivity/LocalPush/LiveActivityPendingEnd.swift:29,40,53
+        LiveActivity/LocalPush/LiveActivityPendingStart.swift:101,112,126
+      Notifications/LocalPush/UserDefaultsValueSync.swift resolves its store to
+      Current.settingsStore.prefs (the same App Group suite) when no explicit
+      UserDefaults is injected.
+
+    CA92.1 is NOT declared here: no app-exclusive UserDefaults access is
+    compiled into Shared-iOS. Environment/WatchUserDefaults.swift uses a bare
+    UserDefaults() (standard suite) but is a member of Shared-watchOS only.
+
+    NSPrivacyAccessedAPICategoryDiskSpace is NOT declared: the only first-party
+    caller (Environment/DeviceWrapper.swift volumes + the StorageSensor that
+    consumes it) is excluded from every build product by the
+    WOOWTECH_ENABLE_STORAGE_SENSOR compilation boundary.
+    This is a SOURCE-LEVEL result; compiled/package/SDK coverage has not been
+    verified in this lane.
+
+    FileTimestamp, SystemBootTime and ActiveKeyboards: no first-party matches
+    found in Sources/**. Source-level only; not a binary-level guarantee.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

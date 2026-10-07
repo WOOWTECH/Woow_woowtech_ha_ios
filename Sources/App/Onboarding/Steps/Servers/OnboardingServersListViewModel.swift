@@ -39,40 +39,9 @@ final class OnboardingServersListViewModel: ObservableObject {
 
     func startDiscovery() {
         discoveredInstances = []
+        // Only Bonjour discoveries belong here, including in development builds.
+        // Public HTTP/TLS test sites must not be offered as Home Assistant servers.
         discovery.start()
-
-        if Current.appConfiguration == .debug {
-            for (idx, instance) in [
-                DiscoveredHomeAssistant(
-                    manualURL: URL(string: "https://jigsaw.w3.org/HTTP/Basic")!,
-                    name: "Basic Auth"
-                ),
-                DiscoveredHomeAssistant(
-                    manualURL: URL(string: "http://httpbin.org/digest-auth/asdf")!,
-                    name: "Digest Auth"
-                ),
-                DiscoveredHomeAssistant(
-                    manualURL: URL(string: "https://self-signed.badssl.com/")!,
-                    name: "Self signed SSL"
-                ),
-                DiscoveredHomeAssistant(
-                    manualURL: URL(string: "https://client.badssl.com/")!,
-                    name: "Client Cert"
-                ),
-                DiscoveredHomeAssistant(
-                    manualURL: URL(string: "https://expired.badssl.com/")!,
-                    name: "Expired"
-                ),
-                DiscoveredHomeAssistant(
-                    manualURL: URL(string: "https://httpbin.org/statuses/404")!,
-                    name: "Status Code 404"
-                ),
-            ].enumerated() {
-                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1500 * (idx + 1))) { [weak self] in
-                    self?.discoveredInstances.append(instance)
-                }
-            }
-        }
     }
 
     func stopDiscovery() {

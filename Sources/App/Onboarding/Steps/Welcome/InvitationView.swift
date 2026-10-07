@@ -42,6 +42,7 @@ struct InvitationView: View {
                     height: Constants.logoHeight,
                     alignment: .center
                 )
+                .clipShape(Circle())
             Text(L10n.Onboarding.Invitation.screenTitle)
                 .font(DesignSystem.Font.largeTitle.bold())
                 .padding(.horizontal, DesignSystem.Spaces.two)

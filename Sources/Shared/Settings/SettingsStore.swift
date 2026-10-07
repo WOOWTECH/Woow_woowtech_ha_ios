@@ -7,9 +7,15 @@ import Version
 
 public class SettingsStore {
     let keychain = AppConstants.Keychain
-    let prefs = UserDefaults(suiteName: AppConstants.AppGroupID)!
+    let prefs: UserDefaults
     private let seenWhatsNewReleaseIDsKey = "seenWhatsNewReleaseIDs"
     private let seenTestFlightMessageIDsKey = "seenTestFlightMessageIDs"
+
+    /// Production callers use the shared App Group suite, exactly as before.
+    /// Tests inject an isolated suite so they never read or mutate the real App Group defaults.
+    public init(prefs: UserDefaults = UserDefaults(suiteName: AppConstants.AppGroupID)!) {
+        self.prefs = prefs
+    }
 
     /// These will only be posted on the main thread
     public static let webViewRelatedSettingDidChange: Notification.Name = .init("webViewRelatedSettingDidChange")
@@ -54,42 +60,6 @@ public class SettingsStore {
     }
 
     #if os(iOS)
-    public var matterLastPreferredNetWorkMacExtendedAddress: String? {
-        get {
-            keychain["matterLastPreferredNetWorkMacExtendedAddress"]
-        }
-        set {
-            keychain["matterLastPreferredNetWorkMacExtendedAddress"] = newValue
-        }
-    }
-
-    public var matterLastPreferredNetWorkActiveOperationalDataset: String? {
-        get {
-            keychain["matterLastPreferredNetWorkActiveOperationalDataset"]
-        }
-        set {
-            keychain["matterLastPreferredNetWorkActiveOperationalDataset"] = newValue
-        }
-    }
-
-    public var matterLastPreferredNetWorkExtendedPANID: String? {
-        get {
-            keychain["matterLastPreferredNetWorkExtendedPANID"]
-        }
-        set {
-            keychain["matterLastPreferredNetWorkExtendedPANID"] = newValue
-        }
-    }
-
-    public var matterLastCommissionedDeviceName: String? {
-        get {
-            keychain["matterLastCommissionedDeviceName"]
-        }
-        set {
-            keychain["matterLastCommissionedDeviceName"] = newValue
-        }
-    }
-
     public func isLocationEnabled(for state: UIApplication.State) -> Bool {
         let authorizationStatus: CLAuthorizationStatus
 
@@ -286,6 +256,20 @@ public class SettingsStore {
         set {
             prefs.set(newValue, forKey: "migratedOptInLocalPush")
         }
+    }
+
+    public func migrateGeocodedLocationDefault(existingInstallation: Bool) {
+        let migrationKey = "migratedGeocodedLocationDefaultOff"
+        guard prefs.object(forKey: migrationKey) == nil else { return }
+
+        if !existingInstallation {
+            var disabledSensorIDs = Set(prefs.stringArray(forKey: "disabledSensors") ?? [])
+            disabledSensorIDs.insert(WebhookSensorId.geocodedLocation.rawValue)
+            prefs.set(Array(disabledSensorIDs), forKey: "disabledSensors")
+        }
+
+        // Existing installations retain both explicit choices and the historical implicit enabled default.
+        prefs.set(true, forKey: migrationKey)
     }
 
     public var periodicUpdateInterval: TimeInterval? {

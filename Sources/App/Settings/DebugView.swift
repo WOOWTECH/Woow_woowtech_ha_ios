@@ -87,28 +87,6 @@ struct DebugView: View {
                 }
             }
 
-            if #available(iOS 17, *), !Current.isCatalyst {
-                Section {
-                    NavigationLink {
-                        ThreadCredentialsManagementView()
-                    } label: {
-                        linkContent(
-                            image: Image(
-                                uiImage: Asset.thread.image.withRenderingMode(
-                                    .alwaysTemplate
-                                )
-                            ),
-                            title: L10n.SettingsDetails.Thread.title,
-                            imageSize: 22
-                        )
-                    }
-                } footer: {
-                    Text(
-                        L10n.Settings.Debugging.Thread.footer
-                    )
-                }
-            }
-
             Section {
                 NavigationLink {
                     ClientEventsLogView()

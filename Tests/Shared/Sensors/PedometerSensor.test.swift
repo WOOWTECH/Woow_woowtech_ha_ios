@@ -5,6 +5,9 @@ import PromiseKit
 import Version
 import XCTest
 
+// Compiled only when fitness sensors are explicitly re-enabled; see
+// Sources/Shared/API/Webhook/Sensors/ActivitySensor.swift for the policy boundary.
+#if WOOWTECH_ENABLE_FITNESS_SENSORS
 class PedometerSensorTests: XCTestCase {
     private enum TestError: Error {
         case someError
@@ -268,3 +271,4 @@ private class FakePedometerData: CMPedometerData {
     var overrideAverageActivePace: NSNumber?
     override var averageActivePace: NSNumber? { overrideAverageActivePace }
 }
+#endif

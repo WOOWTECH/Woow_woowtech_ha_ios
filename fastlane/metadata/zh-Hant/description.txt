@@ -1,27 +1,21 @@
-想在任何地方控制智能設備和監控你家裡的情況嗎？Home Assistant iOS版本提供你在移動設備上就能遠端操作家裡的智能家居設備，也可根據你的需求自動化的運作，將結果通知給你。
+woowtech aiot 是 woowtech 智慧空間主機的行動 App。
+連接由你或管理者設定完成的主機後，就能在手機上操作整個空間，適用於住家，也適用於辦公室、店面與廠辦。
 
-Home Assistant是一套使用Python3開發的智能家居平台，支援了以下設備
+【主要功能】
+・儀表板：查看並控制主機上的燈光、開關、空調、感測器與各式設備
+・即時通知：主機的自動化可將提醒推送到你的手機
+・手機狀態分享：可選擇把電量、網路等手機狀態提供給主機作為自動化條件，每一項都能個別關閉
+・在家與外出：分別設定家中網路位址與外部安全連線位址
 
-- Amazon Echo (Alexa)
-- Apple TV
-- Arduino
-- Belkin WeMo
-- Dark Sky
-- ecobee
-- Google Assistant
-- Google Cast
-- IFTTT
-- IKEA Trådfri (Tradfri)
-- Kodi/XBMC
-- MQTT
-- MySensors
-- Nest
-- Owntracks
-- Philips Hue
-- Plex
-- Pushbullet
-- Sonos
-- Wink
-- Z-Wave
+【使用前請先確認】
+・本 App 需搭配已完成設定的 woowtech 主機，無法單獨使用
+・請向主機管理者取得你的帳號與連線方式
+・外出連線需由管理者設定好外部安全入口
 
-Home Assistant iOS版本需求 9.3以上的iOS版本，並且需要一個已經設定完成的Home Assistant智能家居環境。主機端請設定好可被網際網路存取的外部IP以及安全的SSL憑證，這可以保證你在安全的環境下操作。
+【隱私】
+你的空間資料存放在你自己的主機上，渥屋無法連入你的主機。
+推播通知經渥屋的轉送服務傳送，只即時轉送、不保存通知內容。
+隱私權政策：https://aiot.woowtech.io/privacy
+
+【需要協助】
+使用教學與客服：https://aiot.woowtech.io/blog/help-center-7/woowtech-aiot-app-366

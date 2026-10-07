@@ -3,6 +3,21 @@ import Foundation
 import PromiseKit
 import Version
 
+// MARK: - First-release policy boundary (fitness sensors)
+
+//
+// Owner decision 2026-09-13: the first release declares NO health/fitness functionality on
+// Google Play, so the sensors that collect fitness data are stopped rather than declared.
+// This covers step count, walking distance, floors ascended/descended and motion activity type.
+//
+// Preserved verbatim behind a compilation condition that is intentionally NOT defined in any
+// xcconfig, so it is excluded from every build product. Re-enabling is an explicit, greppable
+// act: define WOOWTECH_ENABLE_FITNESS_SENSORS and re-open the Play health declaration and the
+// ASC privacy questionnaire fitness category.
+//
+// WebhookSensorId cases are deliberately retained for legacy identifier/data compatibility.
+// No sensor history is deleted; the sensors simply stop being reported.
+#if WOOWTECH_ENABLE_FITNESS_SENSORS
 public class PedometerSensor: SensorProvider {
     public enum PedometerError: Error {
         case unauthorized
@@ -151,3 +166,4 @@ public class PedometerSensor: SensorProvider {
         }
     }
 }
+#endif

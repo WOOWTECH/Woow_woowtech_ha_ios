@@ -68,9 +68,10 @@ struct NotificationSoundsView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    if let url = URL(string: "https://aiot.woowtech.io/app/ios/notifications-sounds") {
-                        openURLInBrowser(url, viewControllerProvider.viewController)
-                    }
+                    openURLInBrowser(
+                        AppConstants.WebURLs.notificationSoundsDocs,
+                        viewControllerProvider.viewController
+                    )
                 } label: {
                     Image(systemSymbol: .questionmarkCircle)
                 }

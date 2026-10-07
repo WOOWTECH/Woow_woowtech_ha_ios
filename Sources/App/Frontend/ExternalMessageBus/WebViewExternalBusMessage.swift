@@ -34,12 +34,11 @@ enum WebViewExternalBusMessage: String, CaseIterable {
         [
             "hasSettingsScreen": !Current.isCatalyst,
             "canWriteTag": Current.tags.isNFCAvailable,
-            "canCommissionMatter": Current.matter.isAvailable,
-            "hasMatterStatusReport": Current.matter.isAvailable,
-            "canImportThreadCredentials": Current.matter.threadCredentialsSharingEnabled,
+            "canCommissionMatter": false,
+            "hasMatterStatusReport": false,
+            "canImportThreadCredentials": false,
             "hasBarCodeScanner": true,
-            "canTransferThreadCredentialsToKeychain": Current.matter
-                .threadCredentialsStoreInKeychainEnabled,
+            "canTransferThreadCredentialsToKeychain": false,
             "hasAssist": true,
             "hasAssistSettings": true,
             "hasCameraPlayer": {

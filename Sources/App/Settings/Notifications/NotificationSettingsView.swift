@@ -93,7 +93,7 @@ struct NotificationSettingsView: View {
                 }
             }
 
-            Link(destination: URL(string: "https://aiot.woowtech.io/app/ios/notifications")!) {
+            Link(destination: AppConstants.WebURLs.notificationsDocs) {
                 HStack {
                     Text(L10n.SettingsDetails.Notifications.documentation)
                     Spacer()

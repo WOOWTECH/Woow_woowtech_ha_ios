@@ -28,18 +28,6 @@ enum AuthenticationRoute {
 
     // MARK: - Private helpers
 
-    private var clientID: String {
-        var clientID = "https://woowtech.github.io/woow_ha_ios/ios"
-
-        // swiftlint:disable prohibit_environment_assignment
-        if Current.appConfiguration == .debug {
-            clientID = "https://woowtech.github.io/woow_ha_ios/ios"
-        }
-        // swiftlint:enable prohibit_environment_assignment
-
-        return clientID
-    }
-
     private var method: HTTPMethod {
         .post
     }
@@ -47,9 +35,13 @@ enum AuthenticationRoute {
     private var parameters: Parameters? {
         switch self {
         case let .token(authorizationCode):
-            return ["client_id": clientID, "grant_type": "authorization_code", "code": authorizationCode]
+            return [
+                "client_id": AppConstants.OAuth.clientID,
+                "grant_type": "authorization_code",
+                "code": authorizationCode,
+            ]
         case let .refreshToken(token):
-            return ["client_id": clientID, "grant_type": "refresh_token", "refresh_token": token]
+            return ["client_id": AppConstants.OAuth.clientID, "grant_type": "refresh_token", "refresh_token": token]
         case let .revokeToken(token):
             return ["action": "revoke", "token": token]
         }

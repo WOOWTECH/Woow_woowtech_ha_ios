@@ -9,7 +9,32 @@ public struct LabsLabel: View {
         self.info = info
     }
 
+    var isInformational: Bool {
+        info != nil
+    }
+
     public var body: some View {
+        if isInformational {
+            label
+                .onTapGesture {
+                    showInfo = true
+                }
+                .sheet(isPresented: $showInfo) {
+                    if #available(iOS 16.0, *) {
+                        infoSheet
+                            .presentationDetents([.medium, .large])
+                            .presentationDragIndicator(.visible)
+                    } else {
+                        infoSheet
+                    }
+                }
+        } else {
+            // Do not install a gesture recognizer: this badge is often inside a NavigationLink label.
+            label
+        }
+    }
+
+    private var label: some View {
         HStack(spacing: .zero) {
             Image(uiImage: MaterialDesignIcons.testTubeIcon.image(
                 ofSize: .init(width: 15, height: 15),
@@ -20,7 +45,7 @@ public struct LabsLabel: View {
                 .font(.caption2.bold())
                 .padding(.leading, DesignSystem.Spaces.half)
                 .padding(.trailing, DesignSystem.Spaces.one)
-            if info != nil {
+            if isInformational {
                 Image(systemSymbol: .infoCircle)
                     .resizable()
                     .frame(width: 15, height: 15, alignment: .trailing)
@@ -31,19 +56,6 @@ public struct LabsLabel: View {
         .padding(.vertical, DesignSystem.Spaces.half)
         .background(Color.orange)
         .clipShape(Capsule())
-        .onTapGesture {
-            guard info != nil else { return }
-            showInfo = true
-        }
-        .sheet(isPresented: $showInfo) {
-            if #available(iOS 16.0, *) {
-                infoSheet
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            } else {
-                infoSheet
-            }
-        }
     }
 
     private var infoSheet: some View {
@@ -61,7 +73,7 @@ public struct LabsLabel: View {
             .navigationViewStyle(.stack)
             .safeAreaInset(edge: .bottom) {
                 Button(action: {
-                    openURL(AppConstants.WebURLs.issues)
+                    openURL(AppConstants.WebURLs.support)
                 }, label: {
                     Text(L10n.Experimental.Badge.ReportIssueButton.title)
                 })

@@ -1,1 +1,0 @@
-domótica,código abierto,alexa,hue,wemo,smarthome,notificaciones push,ubicación

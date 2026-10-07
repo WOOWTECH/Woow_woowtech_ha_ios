@@ -65,6 +65,19 @@ final class WebViewExternalBusMessageTests: XCTestCase {
         XCTAssertEqual(WebViewExternalBusOutgoingMessage.allCases.count, 9)
     }
 
+    @MainActor func testNativeCommissioningCapabilitiesAreDisabled() {
+        let result = WebViewExternalBusMessage.configResult
+        for key in [
+            "canCommissionMatter", "hasMatterStatusReport", "canImportThreadCredentials",
+            "canTransferThreadCredentialsToKeychain",
+        ] {
+            XCTAssertEqual(result[key] as? Bool, false, key)
+        }
+        for key in ["hasBarCodeScanner", "hasAssist", "hasAssistSettings", "canSetupImprov", "hasEntityAddTo"] {
+            XCTAssertEqual(result[key] as? Bool, true, key)
+        }
+    }
+
     @MainActor func testConfigResultIncludesAllExpectedKeys() {
         let result = WebViewExternalBusMessage.configResult
 

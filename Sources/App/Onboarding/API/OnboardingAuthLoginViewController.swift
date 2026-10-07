@@ -168,7 +168,8 @@ class OnboardingAuthLoginViewControllerImpl: UIViewController, OnboardingAuthLog
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        if let url = navigationAction.request.url, url.scheme?.hasPrefix("woowhome") == true {
+        if let url = navigationAction.request.url,
+           url.scheme == AppConstants.urlScheme, url.host == "auth-callback" {
             // The web view may have been redirected to a different port/scheme during login; capture
             // where it actually ended up so the stored server URL reflects the real address.
             resolvedServerURL = webView.url ?? lastNavigatedURL

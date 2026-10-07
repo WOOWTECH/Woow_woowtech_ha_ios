@@ -76,7 +76,8 @@ public struct WebhookRequest: ImmutableMappable {
             message: jsonStr.bytes,
             secretKey: .init(secret)
         ) else {
-            Current.Log.error("Unable to generate encrypted webhook payload! Secret: \(secret), JSON: \(jsonStr)")
+            // Must not interpolate the webhook secret or the request payload into logs.
+            Current.Log.error("Unable to generate encrypted webhook payload")
             return nil
         }
 

@@ -110,10 +110,8 @@ final class WebViewExternalMessageHandler: @preconcurrency WebViewExternalMessag
                 }
             case .themeUpdate:
                 webViewController.evaluateJavaScript("notifyThemeColors()", completion: nil)
-            case .matterCommission:
-                matterComissioningHandler(incomingMessage: incomingMessage)
-            case .threadImportCredentials:
-                transferKeychainThreadCredentialsToHARequested()
+            case .matterCommission, .threadImportCredentials, .threadStoreCredentialInAppleKeychain:
+                rejectNativeCommissioning(incomingMessage)
             case .barCodeScanner:
                 guard let title = incomingMessage.Payload?["title"] as? String,
                       let description = incomingMessage.Payload?["description"] as? String,
@@ -132,13 +130,6 @@ final class WebViewExternalMessageHandler: @preconcurrency WebViewExternalMessag
             case .barCodeScannerNotify:
                 guard let message = incomingMessage.Payload?["message"] as? String else { return }
                 presentBarcodeScannerMessage(message: message)
-            case .threadStoreCredentialInAppleKeychain:
-                guard let macExtendedAddress = incomingMessage.Payload?["mac_extended_address"] as? String,
-                      let activeOperationalDataset = incomingMessage.Payload?["active_operational_dataset"] as? String else { return }
-                transferHAThreadCredentialsToKeychain(
-                    macExtendedAddress: macExtendedAddress,
-                    activeOperationalDataset: activeOperationalDataset
-                )
             case .assistShow:
                 let startListening = incomingMessage.Payload?["start_listening"] as? Bool
                 let pipelineId = incomingMessage.Payload?["pipeline_id"] as? String
@@ -303,42 +294,6 @@ final class WebViewExternalMessageHandler: @preconcurrency WebViewExternalMessag
         }
     }
 
-    private func transferKeychainThreadCredentialsToHARequested() {
-        guard let webViewController else {
-            Current.Log.error("WebViewExternalMessageHandler has nil webViewController")
-            return
-        }
-
-        if #available(iOS 16.4, *) {
-            let threadManagementView =
-                UIHostingController(
-                    rootView: ThreadCredentialsSharingView<ThreadTransferCredentialToHAViewModel>
-                        .buildTransferToHomeAssistant(server: webViewController.server)
-                )
-            threadManagementView.view.backgroundColor = .clear
-            threadManagementView.modalPresentationStyle = .overFullScreen
-            threadManagementView.modalTransitionStyle = .crossDissolve
-            webViewController.presentOverlayController(controller: threadManagementView, animated: true)
-        }
-    }
-
-    private func transferHAThreadCredentialsToKeychain(macExtendedAddress: String, activeOperationalDataset: String) {
-        if #available(iOS 16.4, *) {
-            let threadManagementView =
-                UIHostingController(
-                    rootView: ThreadCredentialsSharingView<ThreadTransferCredentialToKeychainViewModel>
-                        .buildTransferToAppleKeychain(
-                            macExtendedAddress: macExtendedAddress,
-                            activeOperationalDataset: activeOperationalDataset
-                        )
-                )
-            threadManagementView.view.backgroundColor = .clear
-            threadManagementView.modalPresentationStyle = .overFullScreen
-            threadManagementView.modalTransitionStyle = .crossDissolve
-            webViewController?.presentOverlayController(controller: threadManagementView, animated: true)
-        }
-    }
-
     private func barcodeScannerRequested(
         title: String,
         description: String,
@@ -353,72 +308,6 @@ final class WebViewExternalMessageHandler: @preconcurrency WebViewExternalMessag
         ))
         barcodeController.modalPresentationStyle = .fullScreen
         webViewController?.presentOverlayController(controller: barcodeController, animated: true)
-    }
-
-    private func matterComissioningHandler(incomingMessage: WebSocketMessage) {
-        // So we avoid conflicting credentials (or absence) between servers
-        cleanPreferredThreadCredentials()
-        let preferredNetWorkMacExtendedAddress = incomingMessage
-            .Payload?[PayloadConstants.macExtendedAddress.rawValue] as? String
-        let preferredNetWorkActiveOperationalDataset = incomingMessage
-            .Payload?[PayloadConstants.activeOperationalDataset.rawValue] as? String
-        let preferredNetworkExtendedPANID = incomingMessage.Payload?[PayloadConstants.extendedPanId.rawValue] as? String
-
-        Current.Log
-            .verbose(
-                "Matter comission received preferredNetWorkMacExtendedAddress from frontend: \(String(describing: preferredNetWorkMacExtendedAddress))"
-            )
-        Current.Log
-            .verbose(
-                "Matter comission received preferredNetWorkActiveOperationalDataset from frontend: \(String(describing: preferredNetWorkActiveOperationalDataset))"
-            )
-        Current.Log
-            .verbose(
-                "Matter comission received preferredNetworkExtendedPANID from frontend: \(String(describing: preferredNetworkExtendedPANID))"
-            )
-
-        if let preferredNetWorkMacExtendedAddress, !preferredNetWorkMacExtendedAddress.isEmpty,
-           let preferredNetWorkActiveOperationalDataset, !preferredNetWorkActiveOperationalDataset.isEmpty,
-           let preferredNetworkExtendedPANID, !preferredNetworkExtendedPANID.isEmpty {
-            // This information will be used in 'MatterRequestHandler'
-            Current.settingsStore
-                .matterLastPreferredNetWorkMacExtendedAddress = preferredNetWorkMacExtendedAddress
-            Current.settingsStore
-                .matterLastPreferredNetWorkActiveOperationalDataset = preferredNetWorkActiveOperationalDataset
-            Current.settingsStore
-                .matterLastPreferredNetWorkExtendedPANID = preferredNetworkExtendedPANID
-
-            // Saving credential in keychain before moving forward as required, docs: https://developer.apple.com/documentation/mattersupport/matteradddeviceextensionrequesthandler/selectthreadnetwork(from:)
-            Current.matter.threadClientService.saveCredential(
-                macExtendedAddress: preferredNetWorkMacExtendedAddress,
-                operationalDataSet: preferredNetWorkActiveOperationalDataset
-            ) { [weak self] error in
-                if let error {
-                    Current.Log
-                        .error(
-                            "Error saving credentials in keychain while comissioning matter device, error: \(error.localizedDescription)"
-                        )
-                    let alert = UIAlertController(
-                        title: L10n.Thread.SaveCredential.Fail.Alert.title(error.localizedDescription),
-                        message: L10n.Thread.SaveCredential.Fail.Alert.message,
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(.init(title: L10n.cancelLabel, style: .default))
-                    alert.addAction(.init(title: L10n.continueLabel, style: .destructive, handler: { [weak self] _ in
-                        self?.comissionMatterDevice()
-                    }))
-                    self?.webViewController?.presentOverlayController(controller: alert, animated: false)
-                } else {
-                    Current.Log
-                        .verbose(
-                            "Succeeded saving thread credentials in keychain, moving forward to matter comissioning"
-                        )
-                    self?.comissionMatterDevice()
-                }
-            }
-        } else {
-            comissionMatterDevice()
-        }
     }
 
     @MainActor
@@ -461,34 +350,22 @@ final class WebViewExternalMessageHandler: @preconcurrency WebViewExternalMessag
         }
     }
 
-    private func cleanPreferredThreadCredentials() {
-        Current.settingsStore.matterLastPreferredNetWorkMacExtendedAddress = nil
-        Current.settingsStore.matterLastPreferredNetWorkActiveOperationalDataset = nil
-        Current.settingsStore.matterLastPreferredNetWorkExtendedPANID = nil
-    }
-
-    private func comissionMatterDevice() {
-        guard let webViewController else {
-            Current.Log.error("WebViewController not available while commissioning matter device")
-            return
+    // Keep stale frontend calls terminal without accessing native commissioning or credentials.
+    private func rejectNativeCommissioning(_ message: WebSocketMessage) {
+        if let id = message.ID {
+            sendExternalBus(message: .init(
+                id: id,
+                type: "result",
+                result: ["success": false, "error": "unsupported"],
+                success: false
+            )).cauterize()
         }
-        Current.matter.commission(webViewController.server).done { [weak self] deviceName in
-            Current.Log.info("Commission call completed with device name: \(String(describing: deviceName))")
-            self?.communicateMatterCommissioningFinished(deviceName: deviceName, success: true)
-        }.catch { [weak self] error in
-            Current.Log.error(error)
-            self?.communicateMatterCommissioningFinished(deviceName: nil, success: false)
+        if message.MessageType == WebViewExternalBusMessage.matterCommission.rawValue {
+            sendExternalBus(message: .init(
+                command: WebViewExternalBusOutgoingMessage.matterCommissionFinish.rawValue,
+                payload: ["success": false]
+            )).cauterize()
         }
-    }
-
-    private func communicateMatterCommissioningFinished(deviceName: String?, success: Bool) {
-        sendExternalBus(message: .init(
-            command: WebViewExternalBusOutgoingMessage.matterCommissionFinish.rawValue,
-            payload: [
-                "name": deviceName,
-                "success": success,
-            ]
-        ))
     }
 
     func showAssist(server: Server, pipeline: String = "", autoStartRecording: Bool = false) {

@@ -88,6 +88,7 @@ struct ConnectionErrorDetailsView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
+                .clipShape(Circle())
             Image(systemSymbol: .wifiExclamationmark)
                 .font(.title3)
                 .foregroundStyle(.red)
@@ -204,8 +205,7 @@ struct ConnectionErrorDetailsView: View {
         VStack(alignment: .leading, spacing: DesignSystem.Spaces.one) {
             exportLogsButton
             documentationLink
-            discordLink
-            githubLink
+            supportLink
         }
     }
 
@@ -297,32 +297,18 @@ struct ConnectionErrorDetailsView: View {
         ExternalLinkButton(
             icon: Image(systemSymbol: .docTextFill),
             title: L10n.Connection.Error.Details.Button.doc,
-            url: ExternalLink.companionAppDocs,
+            url: AppConstants.WebURLs.companionAppDocsTroubleshooting,
             tint: .haPrimary
         )
     }
 
-    private var discordLink: some View {
+    private var supportLink: some View {
         ExternalLinkButton(
-            icon: Image("discord.fill"),
-            title: L10n.Connection.Error.Details.Button.discord,
-            url: ExternalLink.discord,
-            tint: .purple
+            icon: Image(systemSymbol: .questionmarkCircle),
+            title: L10n.Support.contact,
+            url: AppConstants.WebURLs.support,
+            tint: .haPrimary
         )
-    }
-
-    @ViewBuilder
-    private var githubLink: some View {
-        if let searchURL = ExternalLink.githubSearchIssue(domain: (error as NSError).domain) {
-            ExternalLinkButton(
-                icon: Image("github.fill"),
-                title: L10n.Connection.Error.Details.Button.searchGithub,
-                url: searchURL,
-                tint: .init(uiColor: .init(dynamicProvider: { trait in
-                    trait.userInterfaceStyle == .dark ? .white : .black
-                }))
-            )
-        }
     }
 }
 

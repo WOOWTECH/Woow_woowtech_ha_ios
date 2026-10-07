@@ -1,27 +1,21 @@
-Control and monitor your home from anywhere in the world. Home Assistant Companion lets you control all your devices and provides advanced location and notification engines to allow for complex mobile automations.
+woowtech aiot is the mobile app for woowtech smart-space hubs.
+Once connected to a hub set up by you or your administrator, you can run the whole space from your phone — at home, in the office, in a shop or on a factory floor.
 
-Home Assistant is an open-source home automation platform that focuses on local control and privacy. Supported products include:
+FEATURES
+• Dashboards: view and control lights, switches, air conditioning, sensors and other devices on your hub
+• Real-time notifications: your hub's automations can send alerts to your phone
+• Phone status sharing: optionally share battery, network and other phone status with your hub for automations; each item can be turned off
+• Home and away: set separate addresses for your local network and a secure external connection
 
-- Amazon Echo (Alexa)
-- Apple TV
-- Arduino
-- Belkin WeMo
-- Dark Sky
-- ecobee
-- Google Assistant
-- Google Cast
-- IFTTT
-- IKEA Trådfri (Tradfri)
-- Kodi/XBMC
-- MQTT
-- MySensors
-- Nest
-- Owntracks
-- Philips Hue
-- Plex
-- Pushbullet
-- Sonos
-- Wink
-- Z-Wave
+BEFORE YOU START
+• This app requires a woowtech hub that has already been set up; it does not work on its own
+• Ask your hub administrator for your account and connection details
+• Access from outside requires a secure external entry configured by your administrator
 
-Home Assistant Companion requires an iPhone running iOS 10.3 or later and a configured Home Assistant instance. The instance must use Home Assistant Cloud or be accessible from the Internet and secured with a valid, non self-signed, SSL certificate for location tracking. Basic notifications work without external access.
+PRIVACY
+Your data stays on your own hub; WOOW cannot access it.
+Push notifications pass through WOOW's relay, which forwards them in real time and does not store their content.
+Privacy policy: https://aiot.woowtech.io/privacy
+
+SUPPORT
+https://aiot.woowtech.io/blog/help-center-7/woowtech-aiot-app-366

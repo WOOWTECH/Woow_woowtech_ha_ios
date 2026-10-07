@@ -134,6 +134,7 @@ struct GaugeArcView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: Self.logoSize, height: Self.logoSize)
+            .clipShape(Circle())
             .accessibilityHidden(true)
     }
 

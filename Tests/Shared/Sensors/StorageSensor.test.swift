@@ -4,6 +4,9 @@ import PromiseKit
 import Version
 import XCTest
 
+// Compiled only when the storage sensor is explicitly re-enabled; see
+// Sources/Shared/API/Webhook/Sensors/StorageSensor.swift for the first-release policy boundary.
+#if WOOWTECH_ENABLE_STORAGE_SENSOR
 class StorageSensorTests: XCTestCase {
     private var request: SensorProviderRequest = .init(
         reason: .trigger("unit-test"),
@@ -75,3 +78,4 @@ class StorageSensorTests: XCTestCase {
         XCTAssertEqual(sensors[0].Attributes?["Available (Opportunistic)"] as? String, "22.00 GB")
     }
 }
+#endif

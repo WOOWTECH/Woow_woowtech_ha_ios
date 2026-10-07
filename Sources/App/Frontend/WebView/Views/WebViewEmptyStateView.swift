@@ -221,6 +221,7 @@ struct WebViewEmptyStateView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
+                .clipShape(Circle())
         case .recoveredServerNeedingReauthentication:
             Image(systemSymbol: .key)
                 .font(.system(size: 56))

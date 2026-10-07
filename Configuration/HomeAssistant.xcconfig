@@ -7,7 +7,6 @@ BUNDLE_ID_PREFIX = com.woowtech
 ENABLE_CRITICAL_ALERTS_QMQYCKL255 = 1
 ENABLE_PUSH_PROVIDER_QMQYCKL255 = 1
 ENABLE_DEVICE_NAME_QMQYCKL255 = 1
-ENABLE_THREAD_NETWORK_CREDENTIALS_QMQYCKL255 = 1
 ENABLE_CARPLAY_QMQYCKL255 = 1
 
 // cascades down
@@ -31,7 +30,6 @@ CODE_SIGN_STYLE_DEFAULT = Automatic
 ENABLE_CRITICAL_ALERTS[sdk=iphoneos*] = $(ENABLE_CRITICAL_ALERTS_$(DEVELOPMENT_TEAM))
 ENABLE_PUSH_PROVIDER[sdk=iphoneos*] = $(ENABLE_PUSH_PROVIDER_$(DEVELOPMENT_TEAM))
 ENABLE_DEVICE_NAME[sdk=iphoneos*] = $(ENABLE_DEVICE_NAME_$(DEVELOPMENT_TEAM))
-ENABLE_THREAD_NETWORK_CREDENTIALS[sdk=iphoneos*] = $(ENABLE_THREAD_NETWORK_CREDENTIALS_$(DEVELOPMENT_TEAM))
 ENABLE_CARPLAY[sdk=iphoneos*] = $(ENABLE_CARPLAY_$(DEVELOPMENT_TEAM))
 
 // We mutate the entitlements at build time to support other development teams
@@ -59,7 +57,7 @@ COPY_PHASE_STRIP = NO
 SKIP_INSTALL = YES
 
 // makes the executable more HA-specific so it is in crash logs sorted nicely
-PRODUCT_NAME = woowtechHome-$(TARGET_NAME)
+PRODUCT_NAME = woowtechAiot-$(TARGET_NAME)
 PRODUCT_MODULE_NAME = $(TARGET_NAME:c99extidentifier)
 
 // Catalyst-specific
@@ -99,7 +97,3 @@ CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES
 CLANG_ANALYZER_NONNULL = YES
 CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES
 GCC_NO_COMMON_BLOCKS = YES
-
-// Add ThreadNetwork weak reference for iOS and macOS
-OTHER_LDFLAGS[sdk=iphoneos*] = $(inherited) -weak_framework ThreadNetwork
-OTHER_LDFLAGS[sdk=macosx*] = $(inherited) -weak_framework ThreadNetwork

@@ -91,6 +91,10 @@ func convertToDictionary(text: String) -> [String: Any]? {
 }
 
 func setDefaults() {
+    // This marker predates the privacy-default migration, so its presence distinguishes an upgrade from a new install.
+    let isExistingInstallation = prefs.object(forKey: "lastInstalledShortVersion") != nil
+    Current.settingsStore.migrateGeocodedLocationDefault(existingInstallation: isExistingInstallation)
+
     prefs.set(AppConstants.build, forKey: "lastInstalledBundleVersion")
     prefs.set(AppConstants.version, forKey: "lastInstalledShortVersion")
 
