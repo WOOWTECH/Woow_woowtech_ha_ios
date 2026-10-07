@@ -40,6 +40,22 @@ struct OnboardingPermissionsNavigationView: View {
             }
         }
         .animation(DesignSystem.Animation.default, value: viewModel.currentStepIndex)
+        // 「最安全」需要位置權限但已被拒時,由使用者自己決定下一步。
+        // App Store 審查指南 5.1.1(iv):不得未經使用者操作就把人導去設定 App。
+        .alert(
+            L10n.Onboarding.LocalAccess.LocationRequired.title,
+            isPresented: $viewModel.isShowingLocationRequiredForMostSecure
+        ) {
+            Button(L10n.Onboarding.LocalAccess.LocationRequired.openSettings) {
+                viewModel.openSettingsForMostSecure()
+            }
+            Button(L10n.Onboarding.LocalAccess.LocationRequired.useLessSecure) {
+                viewModel.useLessSecureInsteadOfMostSecure()
+            }
+            Button(L10n.cancelLabel, role: .cancel) {}
+        } message: {
+            Text(L10n.Onboarding.LocalAccess.LocationRequired.message)
+        }
     }
 
     @ViewBuilder

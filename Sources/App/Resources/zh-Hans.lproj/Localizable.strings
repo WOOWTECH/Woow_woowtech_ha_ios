@@ -927,6 +927,10 @@
 "onboarding.invitation.title" = "Home Assistant 邀请";
 "onboarding.local_access.description" = "如果此应用知道您何时离家，它可以选择更安全的方式连接到您的 Home Assistant 系统。这需要启用定位服务。";
 "onboarding.local_access.less_secure_option.title" = "低安全：不允许此应用知道您何时在家";
+"onboarding.local_access.location_required.message" = "“最安全”需要位置访问权限，才能判断您是否在家。woowtech aiot 的位置访问目前已关闭。您可以前往“设置”开启，或改用低安全选项继续。";
+"onboarding.local_access.location_required.open_settings" = "打开设置";
+"onboarding.local_access.location_required.title" = "位置访问已关闭";
+"onboarding.local_access.location_required.use_less_secure" = "改用低安全";
 "onboarding.local_access.next_button" = "下一步";
 "onboarding.local_access.privacy_disclaimer" = "这些数据绝不会与 Home Assistant 项目或第三方共享。";
 "onboarding.local_access.secure_option.title" = "最安全：允许此应用知道您何时在家";

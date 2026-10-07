@@ -3,6 +3,7 @@ import Foundation
 @testable import HomeAssistant
 import Shared
 import Testing
+import UIKit
 
 // MARK: - Test Fixtures
 
@@ -235,6 +236,86 @@ struct OnboardingPermissionsNavigationViewModelTests {
         #expect(viewModel.locationPermissionContext == .secureLocalConnection)
     }
 
+    @Test("Choosing most secure when location is already denied asks the user instead of opening Settings")
+    func choosingMostSecureWhenAlreadyDeniedAsksTheUser() async throws {
+        // 這正是 Apple 2026-09-23 退件的路徑:位置頁已拒絕 → 本地連線頁預設「最安全」→ 按 Next
+        // → 舊版直接跳設定 App,完全沒有顯示權限請求(5.1.1(iv))。
+        let server = ServerFixture.standard
+        let urlOpener = MockURLOpener()
+        let viewModel = OnboardingPermissionsNavigationViewModel(
+            onboardingServer: server,
+            permissionStatus: { .denied },
+            urlOpener: urlOpener
+        )
+        viewModel.navigateToStep(.localAccess)
+
+        viewModel.requestLocationPermissionForSecureLocalConnection()
+
+        #expect(urlOpener.openedURLs.isEmpty)
+        #expect(viewModel.isShowingLocationRequiredForMostSecure)
+        #expect(viewModel.currentStep == .localAccess)
+    }
+
+    @Test("Sharing location when it is already denied moves on without opening Settings")
+    func sharingLocationWhenAlreadyDeniedMovesOn() async throws {
+        // 裝置整體關閉定位服務時,第一次按「Share my location」狀態就已是 .denied。
+        // 等同使用者拒絕:關閉位置感測器並前進,不能自己跳設定 App。
+        let server = ServerFixture.standard
+        let urlOpener = MockURLOpener()
+        let viewModel = OnboardingPermissionsNavigationViewModel(
+            onboardingServer: server,
+            permissionStatus: { .denied },
+            urlOpener: urlOpener
+        )
+        viewModel.navigateToStep(.location)
+        let locationIndex = viewModel.currentStepIndex
+
+        viewModel.requestLocationPermissionToShareWithHomeAssistant()
+
+        #expect(urlOpener.openedURLs.isEmpty)
+        #expect(server.info.setting(for: .locationPrivacy) == .never)
+        #expect(viewModel.currentStepIndex == locationIndex + 1)
+    }
+
+    @Test("Opening Settings from the most-secure dialog is the user's own choice")
+    func openingSettingsFromMostSecureDialog() async throws {
+        // Apple 退件信建議的做法:說明原因並「提供」設定 App 的連結,由使用者自己按。
+        let server = ServerFixture.standard
+        let urlOpener = MockURLOpener()
+        let viewModel = OnboardingPermissionsNavigationViewModel(
+            onboardingServer: server,
+            permissionStatus: { .denied },
+            urlOpener: urlOpener
+        )
+        viewModel.navigateToStep(.localAccess)
+        viewModel.requestLocationPermissionForSecureLocalConnection()
+
+        viewModel.openSettingsForMostSecure()
+
+        #expect(urlOpener.openedURLs.map(\.url.absoluteString) == [UIApplication.openSettingsURLString])
+        #expect(viewModel.isShowingLocationRequiredForMostSecure == false)
+    }
+
+    @Test("Choosing less secure from the most-secure dialog applies it and moves past local access")
+    func choosingLessSecureFromMostSecureDialog() async throws {
+        let server = ServerFixture.standard
+        let urlOpener = MockURLOpener()
+        let viewModel = OnboardingPermissionsNavigationViewModel(
+            onboardingServer: server,
+            permissionStatus: { .denied },
+            urlOpener: urlOpener
+        )
+        viewModel.navigateToStep(.localAccess)
+        viewModel.requestLocationPermissionForSecureLocalConnection()
+
+        viewModel.useLessSecureInsteadOfMostSecure()
+
+        #expect(server.info.connection.connectionAccessSecurityLevel == .lessSecure)
+        #expect(viewModel.currentStep == .completion)
+        #expect(viewModel.isShowingLocationRequiredForMostSecure == false)
+        #expect(urlOpener.openedURLs.isEmpty)
+    }
+
     @Test("Set less secure local connection")
     func setLessSecureLocalConnection() async throws {
         let server = ServerFixture.standard
@@ -388,6 +469,26 @@ struct OnboardingPermissionsNavigationViewModelLocationDelegateTests {
         #expect(server.info.setting(for: .locationPrivacy) == .never)
         // 而且流程必須往前走。
         #expect(viewModel.currentStepIndex == 1)
+    }
+
+    @Test("Location manager authorization change - denied while choosing most secure asks the user")
+    func locationManagerAuthorizationChangeDeniedWhileChoosingMostSecureAsksTheUser() async throws {
+        // App Store 審查指南 5.1.1(iv),Apple 2026-09-23 退件:
+        // "The user is redirected to the Settings app to grant access before showing the permission request."
+        // 「最安全」需要位置權限。使用者拒絕後,App 不得自己跳設定 App,也不能讓流程卡住;
+        // 要改成跳出說明視窗,由使用者決定開啟設定、改用較不安全,或取消。
+        let server = ServerFixture.standard
+        let viewModel = OnboardingPermissionsNavigationViewModel(onboardingServer: server)
+        viewModel.navigateToStep(.localAccess)
+        viewModel.locationPermissionContext = .secureLocalConnection
+
+        let mockLocationManager = MockCLLocationManager()
+        mockLocationManager.authorizationStatus = .denied
+
+        viewModel.locationManagerDidChangeAuthorization(mockLocationManager)
+
+        #expect(viewModel.isShowingLocationRequiredForMostSecure)
+        #expect(viewModel.currentStep == .localAccess)
     }
 
     @Test("Location manager authorization change - denied after less secure selection advances")

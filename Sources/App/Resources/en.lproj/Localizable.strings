@@ -929,6 +929,10 @@ Tags will work on any device with woowtech aiot installed which has hardware sup
 "onboarding.invitation.title" = "Home Assistant Invite";
 "onboarding.local_access.description" = "If this app knows when you’re away from home, it can choose a more secure way to connect to your Home Assistant system. This requires location services to be enabled.";
 "onboarding.local_access.less_secure_option.title" = "Less secure: Do not allow this app to know when you're home";
+"onboarding.local_access.location_required.message" = "“Most secure” needs location access so this app can tell when you’re home. Location access for woowtech aiot is currently turned off. You can turn it on in Settings, or continue with the less secure option.";
+"onboarding.local_access.location_required.open_settings" = "Open Settings";
+"onboarding.local_access.location_required.title" = "Location access is off";
+"onboarding.local_access.location_required.use_less_secure" = "Use less secure";
 "onboarding.local_access.next_button" = "Next";
 "onboarding.local_access.privacy_disclaimer" = "This data will never be shared with the Home Assistant project or third parties.";
 "onboarding.local_access.secure_option.title" = "Most secure: Allow this app to know when you're home";

@@ -63,6 +63,9 @@ final class OnboardingPermissionsNavigationViewModel: NSObject, ObservableObject
     /// SSID Stored into server settings
     @Published var storedSSIDSuccessfully: Bool = false
 
+    /// 使用者選了「最安全」但位置權限被拒時,顯示說明視窗讓使用者自己決定下一步。
+    @Published var isShowingLocationRequiredForMostSecure: Bool = false
+
     // MARK: - Private Properties
 
     /// Tracks the previous step index for determining animation direction
@@ -70,6 +73,9 @@ final class OnboardingPermissionsNavigationViewModel: NSObject, ObservableObject
 
     private let locationManager = CLLocationManager()
     private let onboardingServer: Server
+    /// 注入點,讓測試能模擬「權限早已被拒」;正式執行讀 CLLocationManager。
+    private let permissionStatus: () -> CLAuthorizationStatus
+    private let urlOpener: URLOpening
 
     // MARK: - Step Management
 
@@ -87,8 +93,15 @@ final class OnboardingPermissionsNavigationViewModel: NSObject, ObservableObject
         return steps[currentStepIndex]
     }
 
-    init(onboardingServer: Server, steps: [StepID]? = nil) {
+    init(
+        onboardingServer: Server,
+        steps: [StepID]? = nil,
+        permissionStatus: @escaping () -> CLAuthorizationStatus = { Current.location.permissionStatus },
+        urlOpener: URLOpening = URLOpener.shared
+    ) {
         self.onboardingServer = onboardingServer
+        self.permissionStatus = permissionStatus
+        self.urlOpener = urlOpener
 
         if let customSteps = steps {
             // Use externally provided steps
@@ -185,6 +198,22 @@ final class OnboardingPermissionsNavigationViewModel: NSObject, ObservableObject
         requestLocationPermission()
     }
 
+    /// 說明視窗「開啟設定」:使用者自己選擇前往設定 App 開啟位置權限。
+    func openSettingsForMostSecure() {
+        isShowingLocationRequiredForMostSecure = false
+        // 只有這裡、而且是使用者自己按下之後,才開啟設定 App(5.1.1(iv))。
+        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+            urlOpener.open(settingsUrl, options: [:], completionHandler: nil)
+        }
+    }
+
+    /// 說明視窗「改用較不安全」:套用較不安全的連線方式並略過本地連線設定。
+    func useLessSecureInsteadOfMostSecure() {
+        isShowingLocationRequiredForMostSecure = false
+        setLessSecureLocalConnection()
+        navigatePastLocalAccessConfiguration()
+    }
+
     /// Configures the server for less secure local connections (when location permission is denied)
     /// - Note: Sets security level to .lessSecure as fallback option
     func setLessSecureLocalConnection() {
@@ -208,18 +237,27 @@ final class OnboardingPermissionsNavigationViewModel: NSObject, ObservableObject
     }
 
     /// Handles the actual location permission request based on current authorization status
-    /// - Note: Opens settings if denied/restricted, grants immediately if already authorized,
-    ///         or requests permission if not determined
+    /// - Note: Follows the existing decision if denied/restricted (never opens Settings on its own),
+    ///         grants immediately if already authorized, or requests permission if not determined
     private func requestLocationPermission() {
-        switch Current.location.permissionStatus {
+        switch permissionStatus() {
         case .denied, .restricted:
-            guard locationPermissionContext != .lessSecureLocalConnection else {
+            // ⚠️ 這裡絕對不能自己開設定 App。Apple 2026-09-23 以 5.1.1(iv) 退件:
+            //    "The user is redirected to the Settings app to grant access before showing
+            //     the permission request." 權限早已被拒(或定位服務整體關閉)時,
+            //    系統對話框不會再出現,只能照使用者既有的決定處理。
+            switch locationPermissionContext {
+            case .lessSecureLocalConnection:
                 applyLocationPermissionNeeds()
-                return
-            }
-            // Open iOS settings for user to manually enable location
-            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-                URLOpener.shared.open(settingsUrl, options: [:], completionHandler: nil)
+            case .shareWithHomeAssistant:
+                // 等同使用者拒絕:關閉位置感測器並前進。
+                disableLocationSensor()
+                nextStep()
+            case .secureLocalConnection:
+                // 「最安全」需要位置;交給說明視窗,由使用者決定開設定、改較不安全或取消。
+                isShowingLocationRequiredForMostSecure = true
+            case .notRequested:
+                break
             }
         case .authorizedWhenInUse, .authorizedAlways:
             // Permission already granted, apply the context-specific needs
@@ -297,6 +335,10 @@ extension OnboardingPermissionsNavigationViewModel: CLLocationManagerDelegate {
                 //    這裡刻意不呼叫 applyLocationPermissionNeeds() —— 那會連帶
                 //    enableLocationSensor(),與使用者剛表達的拒絕相反。
                 nextStep()
+            } else if locationPermissionContext == .secureLocalConnection {
+                // 「最安全」需要位置權限。使用者剛拒絕,不能卡住,也不能自己跳設定 App
+                // (5.1.1(iv),Apple 2026-09-23 退件)—— 交給說明視窗讓使用者決定。
+                isShowingLocationRequiredForMostSecure = true
             }
         case .authorizedAlways:
             // Full location access granted - no additional action needed

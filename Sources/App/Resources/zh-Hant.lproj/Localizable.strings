@@ -928,6 +928,10 @@
 "onboarding.invitation.title" = "Home Assistant 邀請";
 "onboarding.local_access.description" = "如果應用程式得知您何時不在家，可以選擇更安全的方式連線至您的 Home Assistant 系統。此功能將需要啟用定位服務。";
 "onboarding.local_access.less_secure_option.title" = "安全性較低：不允許應用程式知道您何時在家";
+"onboarding.local_access.location_required.message" = "「最安全」需要位置存取權，才能判斷您是否在家。woowtech aiot 的位置存取目前已關閉。您可以前往「設定」開啟，或改用安全性較低的選項繼續。";
+"onboarding.local_access.location_required.open_settings" = "開啟設定";
+"onboarding.local_access.location_required.title" = "位置存取已關閉";
+"onboarding.local_access.location_required.use_less_secure" = "改用安全性較低";
 "onboarding.local_access.next_button" = "下一個";
 "onboarding.local_access.privacy_disclaimer" = "此些資料絕不會與 Home Assistant 專案或第三方分享。";
 "onboarding.local_access.secure_option.title" = "最安全：允許應用程式知道您何時在家";

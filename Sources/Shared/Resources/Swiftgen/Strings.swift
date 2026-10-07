@@ -3215,6 +3215,16 @@ public enum L10n {
         /// Less secure: Do not allow this app to know when you're home
         public static var title: String { return L10n.tr("Localizable", "onboarding.local_access.less_secure_option.title") }
       }
+      public enum LocationRequired {
+        /// “Most secure” needs location access so this app can tell when you’re home. Location access for woowtech aiot is currently turned off. You can turn it on in Settings, or continue with the less secure option.
+        public static var message: String { return L10n.tr("Localizable", "onboarding.local_access.location_required.message") }
+        /// Open Settings
+        public static var openSettings: String { return L10n.tr("Localizable", "onboarding.local_access.location_required.open_settings") }
+        /// Location access is off
+        public static var title: String { return L10n.tr("Localizable", "onboarding.local_access.location_required.title") }
+        /// Use less secure
+        public static var useLessSecure: String { return L10n.tr("Localizable", "onboarding.local_access.location_required.use_less_secure") }
+      }
       public enum SecureOption {
         /// Most secure: Allow this app to know when you're home
         public static var title: String { return L10n.tr("Localizable", "onboarding.local_access.secure_option.title") }
