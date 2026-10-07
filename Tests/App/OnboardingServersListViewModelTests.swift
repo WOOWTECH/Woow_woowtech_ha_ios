@@ -10,8 +10,8 @@ struct OnboardingServersListViewModelTests {
             mockBonjour
         }
         let sut = OnboardingServersListViewModel()
-        assert(sut.discoveredInstances.isEmpty)
-        assert((mockBonjour.observer as? OnboardingServersListViewModel) != nil)
+        #expect(sut.discoveredInstances.isEmpty)
+        #expect((mockBonjour.observer as? OnboardingServersListViewModel) != nil)
     }
 
     @Test func testStartDiscovery() async throws {
@@ -22,8 +22,8 @@ struct OnboardingServersListViewModelTests {
         let sut = OnboardingServersListViewModel()
 
         sut.startDiscovery()
-        assert(sut.discoveredInstances.isEmpty)
-        assert(mockBonjour.startCalled)
+        #expect(sut.discoveredInstances.isEmpty)
+        #expect(mockBonjour.startCalled)
     }
 
     @Test func testStopDiscovery() async throws {
@@ -34,7 +34,7 @@ struct OnboardingServersListViewModelTests {
         let sut = OnboardingServersListViewModel()
 
         sut.stopDiscovery()
-        assert(mockBonjour.stopCalled)
+        #expect(mockBonjour.stopCalled)
     }
 
     @Test func testSelectInstance() async throws {
@@ -50,7 +50,7 @@ struct OnboardingServersListViewModelTests {
         let dummyController = await UIViewController()
         sut.selectInstance(instance, controller: dummyController)
 
-        assert(sut.currentlyInstanceLoading == instance)
+        #expect(sut.currentlyInstanceLoading == instance)
     }
 
     @Test func testResetFlow() async throws {
@@ -61,7 +61,7 @@ struct OnboardingServersListViewModelTests {
         let sut = OnboardingServersListViewModel()
 
         sut.resetFlow()
-        assert(sut.currentlyInstanceLoading == nil)
-        assert(sut.isLoading == false)
+        #expect(sut.currentlyInstanceLoading == nil)
+        #expect(sut.isLoading == false)
     }
 }

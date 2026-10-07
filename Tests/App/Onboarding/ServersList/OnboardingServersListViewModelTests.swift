@@ -11,8 +11,8 @@ struct OnboardingServersListViewModelTests {
             mockBonjour
         }
         let sut = OnboardingServersListViewModel(shouldDismissOnSuccess: false)
-        assert(sut.discoveredInstances.isEmpty)
-        assert((mockBonjour.observer as? OnboardingServersListViewModel) != nil)
+        #expect(sut.discoveredInstances.isEmpty)
+        #expect((mockBonjour.observer as? OnboardingServersListViewModel) != nil)
     }
 
     @Test func testStartDiscovery() async throws {
@@ -23,8 +23,8 @@ struct OnboardingServersListViewModelTests {
         let sut = OnboardingServersListViewModel(shouldDismissOnSuccess: false)
 
         sut.startDiscovery()
-        assert(sut.discoveredInstances.isEmpty)
-        assert(mockBonjour.startCalled)
+        #expect(sut.discoveredInstances.isEmpty)
+        #expect(mockBonjour.startCalled)
     }
 
     @Test @MainActor
@@ -117,7 +117,7 @@ struct OnboardingServersListViewModelTests {
         let sut = OnboardingServersListViewModel(shouldDismissOnSuccess: false)
 
         sut.stopDiscovery()
-        assert(mockBonjour.stopCalled)
+        #expect(mockBonjour.stopCalled)
     }
 
     @Test func testResetFlow() async throws {
@@ -128,8 +128,8 @@ struct OnboardingServersListViewModelTests {
         let sut = OnboardingServersListViewModel(shouldDismissOnSuccess: false)
 
         sut.resetFlow()
-        assert(sut.currentlyInstanceLoading == nil)
-        assert(sut.manualInputLoading == false)
-        assert(sut.invitationLoading == false)
+        #expect(sut.currentlyInstanceLoading == nil)
+        #expect(sut.manualInputLoading == false)
+        #expect(sut.invitationLoading == false)
     }
 }

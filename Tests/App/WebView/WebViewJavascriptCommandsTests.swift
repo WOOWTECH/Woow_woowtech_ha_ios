@@ -10,7 +10,7 @@ import Testing
 
 struct WebViewJavascriptCommandsTests {
     @Test func testWebViewJavascriptCommandsSearchEntities() async throws {
-        assert(WebViewJavascriptCommands.searchEntitiesKeyEvent == """
+        #expect(WebViewJavascriptCommands.searchEntitiesKeyEvent == """
         var event = new KeyboardEvent('keydown', {
             key: 'e',
             code: 'KeyE',
@@ -25,7 +25,7 @@ struct WebViewJavascriptCommandsTests {
     }
 
     @Test func testWebViewJavascriptCommandsQuickSearch() async throws {
-        assert(WebViewJavascriptCommands.quickSearchKeyEvent == """
+        #expect(WebViewJavascriptCommands.quickSearchKeyEvent == """
         var event = new KeyboardEvent('keydown', {
             key: 'k',
             code: 'KeyK',
@@ -40,7 +40,7 @@ struct WebViewJavascriptCommandsTests {
     }
 
     @Test func testWebViewJavascriptCommandsSearchDevices() async throws {
-        assert(WebViewJavascriptCommands.searchDevicesKeyEvent == """
+        #expect(WebViewJavascriptCommands.searchDevicesKeyEvent == """
         var event = new KeyboardEvent('keydown', {
             key: 'd',
             code: 'KeyD',
@@ -55,7 +55,7 @@ struct WebViewJavascriptCommandsTests {
     }
 
     @Test func testWebViewJavascriptCommandsSearchCommands() async throws {
-        assert(WebViewJavascriptCommands.searchCommandsKeyEvent == """
+        #expect(WebViewJavascriptCommands.searchCommandsKeyEvent == """
         var event = new KeyboardEvent('keydown', {
             key: 'c',
             code: 'KeyC',
@@ -70,7 +70,7 @@ struct WebViewJavascriptCommandsTests {
     }
 
     @Test func testWebViewJavascriptCommandsAssist() async throws {
-        assert(WebViewJavascriptCommands.assistKeyEvent == """
+        #expect(WebViewJavascriptCommands.assistKeyEvent == """
         var event = new KeyboardEvent('keydown', {
             key: 'a',
             code: 'KeyA',
