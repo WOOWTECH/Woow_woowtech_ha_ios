@@ -7,7 +7,7 @@ public extension SnapshottablePreviewConfigurations {
         drawHierarchyInKeyWindow: Bool = false,
         layout: SwiftUISnapshotLayout = SwiftUISnapshotLayout.device(config: .iPhone13(.portrait)),
         traits: UITraitCollection = .init(),
-        record recording: Bool = false,
+        record recording: Bool? = nil,
         timeout: TimeInterval = 5,
         fileID: StaticString = #fileID,
         file filePath: StaticString = #filePath,
@@ -36,7 +36,7 @@ public extension SnapshottablePreviewConfigurations {
     func assertLightDarkSnapshots(
         drawHierarchyInKeyWindow: Bool = false,
         layout: SwiftUISnapshotLayout = SwiftUISnapshotLayout.device(config: .iPhone13(.portrait)),
-        record recording: Bool = false,
+        record recording: Bool? = nil,
         timeout: TimeInterval = 5,
         fileID: StaticString = #fileID,
         file filePath: StaticString = #filePath,
