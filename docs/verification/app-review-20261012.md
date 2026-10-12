@@ -1,6 +1,19 @@
 # woowtech aiot 1.0 (2027)：退件處理與文字說明草稿
 
-狀態：NFC 備註與釐清回覆已送出並回讀確認；build 2027 本機準備中，尚未上傳或重新送審。
+狀態：2026-10-12 台灣時間 14:45，1.0 (2027) 已重新送審，網頁與 API 均確認 WAITING_FOR_REVIEW。
+
+## 重新送審完成收據
+
+- App：6811131426 / com.woowtech.aiot。
+- 版本：1.0，version ID 8acf8854-21f7-4637-8a72-dc51e0ac0bac，appStoreState=WAITING_FOR_REVIEW。
+- Build：2027，ID e1fb8451-ae90-446c-8a7e-33e534c24f23，processingState=VALID，usesNonExemptEncryption=false。
+- 提交：f2ba09eb-dd43-4179-9915-b982766f089e，state=WAITING_FOR_REVIEW，submittedDate=2026-10-12T06:45:53.881Z。
+- 發布方式：保留既有 AFTER_APPROVAL（通過後自動發布），未修改發布方式。
+- 已先更新 NFC 審查備註與送出釐清回覆，之後補入 build 2027 移除 UIBackgroundModes/audio 的 2.5.4 說明；API 回讀一致。
+- API 改綁 2027 後，Chrome Extension MCP 在版本頁按「更新審查內容」，確認提交表格為 1.0 (2027)／準備審查，再按「重新提交至 App 審查」。送出後表格為 1.0 (2027)／等待審查，並以 API 再核對版本、build、提交狀態。
+- 目前無 Apple 對 NFC 免影片請求的接受通知；WAITING_FOR_REVIEW 不等於已核准或免除影片要求。
+- 程式修正已推 origin/port/apporo-fixes，commit 288b0d3eb。臨時 CI 分支 ci/woow-b2027-20261012 已刪除；雲端 build 來源與功能分支的 Configuration/Sources/Tests/Tools/Podfile/專案檔一致。
+- 後續只需追蹤審查結果；若退件，讀取最新訊息再處理，不能依舊退件內容盲目重送。
 
 ## 2026-10-12 實際送出紀錄
 
@@ -20,6 +33,11 @@
 - WOOW（6811131426）10/08 對 build 2026 的訊息仍要求 NFC 影片，另有背景音訊 2.5.4；審查裝置同為 iPad Air 11-inch (M3)。10/07 已填入與 Apporo 幾乎相同的 NFC 說明，不能把再貼同一段視為已解決。
 
 ## 本機修改與驗證
+
+- 10/12 已完成本機手動簽章與 App Store 匯出，經 `heavy.sh run woow-aiot-b2027-export-20261012` 執行，exit 0。
+- 最終 IPA 主 App／五個擴充功能皆為 1.0 (2027)，簽章與 App Store profile 驗證通過；主 App 保留正式 APNs、App Group、NFC、associated domains，背景模式不含 audio。
+- 產物位於 `/Volumes/WOOW-BUILD/woow-aiot/releases/b2027-20261012/`，GitHub artifact SHA-256 與 ZIP 完整性已核對。
+- Apple `altool --validate-app` 回報 `VERIFY SUCCEEDED with no errors`／exit 0；14:39（台灣）`--upload-app` 回報 `UPLOAD SUCCEEDED with no errors`／exit 0，進入 Apple PROCESSING。本機重工作鎖已釋放。未做實機或模擬器回歸，不將檔案／簽章驗證描述為實機驗收。
 
 - 擁有者後續指示「一直推進到重新送審」，持續授權完成環境準備、建置、簽章、上傳及重送。
 - 10/12 本機內碟約 4.1 GiB、外接 WOOW-BUILD 約 4.5 GiB，不在本機完整編譯。heavy.sh status 為 free；本機匯出仍須排隊。
