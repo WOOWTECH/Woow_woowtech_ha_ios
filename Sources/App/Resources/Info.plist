@@ -206,7 +206,6 @@
 		<string>fetch</string>
 		<string>location</string>
 		<string>remote-notification</string>
-		<string>audio</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>

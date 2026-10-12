@@ -342,7 +342,7 @@ class WoowtechAiotContractTests(unittest.TestCase):
         self.assertLess(release.index('#include "HomeAssistant.xcconfig"'), release.index("MARKETING_VERSION"))
         self.assertNotIn("CURRENT_PROJECT_VERSION", release)
         self.assertEqual(read("Configuration/Version.xcconfig"),
-                         "MARKETING_VERSION=2026.7.3\nCURRENT_PROJECT_VERSION=2026\n")
+                         "MARKETING_VERSION=2026.7.3\nCURRENT_PROJECT_VERSION=2027\n")
         debug = read("Configuration/HomeAssistant.debug.xcconfig")
         self.assertIn('#include "HomeAssistant.xcconfig"', debug)
         self.assertNotIn("MARKETING_VERSION", debug)
@@ -472,6 +472,8 @@ class WoowtechAiotContractTests(unittest.TestCase):
         app = plistlib.loads((ROOT / "Sources/App/Resources/Info.plist").read_bytes())
         self.assertIn("location", app["UIBackgroundModes"])
         self.assertIn("remote-notification", app["UIBackgroundModes"])
+        # App Review 2.5.4: this release does not offer persistent background audio.
+        self.assertNotIn("audio", app["UIBackgroundModes"])
 
     def test_all_localized_identity_and_backend_terminology(self):
         # This checked-in manifest records every locale/key pair changed by the all-locale correction wave.
