@@ -49,7 +49,7 @@ struct WidgetCommonlyUsedEntitiesTimelineProvider: WidgetSingleEntryTimelineProv
             entitiesState: [:],
             showLastUpdateTime: configuration.showLastUpdateTime,
             showStates: configuration.showStates,
-            serverName: configuration.server.getServer()?.info.name
+            serverName: configuration.server?.getServer()?.info.name
         )
     }
 
@@ -67,12 +67,12 @@ struct WidgetCommonlyUsedEntitiesTimelineProvider: WidgetSingleEntryTimelineProv
             entitiesState: entitiesState,
             showLastUpdateTime: configuration.showLastUpdateTime,
             showStates: configuration.showStates,
-            serverName: configuration.server.getServer()?.info.name
+            serverName: configuration.server?.getServer()?.info.name
         )
     }
 
     private func fetchItems(context: Context, configuration: WidgetCommonlyUsedEntitiesAppIntent) async -> [MagicItem] {
-        guard let server = configuration.server.getServer() ?? Current.servers.all.first else {
+        guard let server = configuration.server?.getServer() ?? Current.servers.all.first else {
             Current.Log.info("No server found for commonly used entities widget, returning empty items")
             return []
         }
@@ -114,10 +114,11 @@ struct WidgetCommonlyUsedEntitiesTimelineProvider: WidgetSingleEntryTimelineProv
         configuration: WidgetCommonlyUsedEntitiesAppIntent,
         items: [MagicItem]
     ) async -> [MagicItem: WidgetEntityState] {
+        let serverId = configuration.server?.getServer()?.identifier.rawValue
         let stateProvider = WidgetEntityStateProvider(
             logPrefix: "Commonly used entities",
             cacheValiditySeconds: Self.cacheValiditySeconds,
-            cacheURL: { commonlyUsedEntitiesCacheURL(serverId: configuration.server.getServer()?.identifier.rawValue) },
+            cacheURL: { commonlyUsedEntitiesCacheURL(serverId: serverId) },
             shouldFetchStates: { true },
             skipFetchLogMessage: nil,
             itemFilter: { _ in true },
@@ -169,10 +170,15 @@ struct WidgetCommonlyUsedEntitiesAppIntent: AppIntent, WidgetConfigurationIntent
 
     static var isDiscoverable: Bool = false
 
+    /// Optional on purpose. A required server takes its default from the servers the extension can see,
+    /// and when there is none (the server was deleted, or not yet re-added after onboarding again)
+    /// WidgetKit cannot build the intent: it never asks for a timeline, renders nothing
+    /// ("Returned view collection was either nil or empty") and only retries an hour later.
+    /// `fetchItems` already falls back to the first server, or to the empty state.
     @Parameter(
         title: .init("widgets.param.server.title", defaultValue: "Server")
     )
-    var server: IntentServerAppEntity
+    var server: IntentServerAppEntity?
 
     @Parameter(
         title: .init("widgets.custom.show_last_update_time.param.title", defaultValue: "Show last update time"),

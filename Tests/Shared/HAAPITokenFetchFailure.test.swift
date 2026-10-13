@@ -108,7 +108,7 @@ class HAAPITokenFetchFailureTests: XCTestCase {
         defer { HomeAssistantAPI.rejectedReconnectDelays = priorDelays }
 
         let api = HomeAssistantAPI(server: .fake())
-        let connection = RejectingMockConnection()
+        let connection = ScriptedConnectMockConnection(stateAfterConnect: .disconnected(reason: .rejected))
         connection.delegate = api
         api.connection = connection
 
@@ -120,15 +120,62 @@ class HAAPITokenFetchFailureTests: XCTestCase {
         XCTAssertEqual(connection.connectCount, 3)
         XCTAssertEqual(connection.state, .disconnected(reason: .rejected))
     }
+
+    func testConnectionDelegateRestartsAConnectAttemptThatNeverLeavesConnecting() {
+        let priorDelays = HomeAssistantAPI.staleConnectingDelays
+        HomeAssistantAPI.staleConnectingDelays = [0, 3600]
+        defer { HomeAssistantAPI.staleConnectingDelays = priorDelays }
+
+        let api = HomeAssistantAPI(server: .fake())
+        let connection = ScriptedConnectMockConnection(stateAfterConnect: .connecting)
+        connection.delegate = api
+        api.connection = connection
+
+        // Starscream ignores NWConnection's `.waiting` and has no timeout on the upgrade response, so a
+        // socket opened while the server is unreachable, or one whose handshake stalls across a
+        // suspension, stays `.connecting` forever; `connectWebSocketIfNeeded` deliberately leaves it alone.
+        connection.connect()
+        drainMainQueue(cycles: 10)
+
+        XCTAssertEqual(connection.disconnectCount, 1)
+        XCTAssertEqual(connection.connectCount, 2)
+    }
+
+    func testConnectionDelegateLeavesAConnectAttemptThatCompletesInTime() {
+        let priorDelays = HomeAssistantAPI.staleConnectingDelays
+        HomeAssistantAPI.staleConnectingDelays = [0]
+        defer { HomeAssistantAPI.staleConnectingDelays = priorDelays }
+
+        let api = HomeAssistantAPI(server: .fake())
+        let connection = ScriptedConnectMockConnection(stateAfterConnect: .connecting)
+        connection.delegate = api
+        api.connection = connection
+
+        connection.setState(.connecting)
+        connection.setState(.ready(version: "1.0-mock"))
+        drainMainQueue(cycles: 10)
+
+        XCTAssertEqual(connection.disconnectCount, 0)
+        XCTAssertEqual(connection.connectCount, 0)
+        XCTAssertEqual(connection.state, .ready(version: "1.0-mock"))
+    }
 }
 
-/// A minimal `HAConnection` whose `connect()` always lands back in the rejected state, used to exercise
-/// the reconnect-budget cap. `HAMockConnection` is `public` (not `open`), so it can't be subclassed here.
-private final class RejectingMockConnection: HAConnection {
+/// A minimal `HAConnection` whose `connect()` always lands in one scripted state: rejected, to exercise
+/// the reconnect-budget cap, or connecting, to mimic a socket whose upgrade never completes.
+/// `HAMockConnection` is `public` (not `open`), so it can't be subclassed here.
+private final class ScriptedConnectMockConnection: HAConnection {
     weak var delegate: HAConnectionDelegate?
     var configuration: HAConnectionConfiguration = .fake
     var callbackQueue: DispatchQueue = .main
     private(set) var connectCount = 0
+    private(set) var disconnectCount = 0
+    let stateAfterConnect: HAConnectionState
+
+    init(stateAfterConnect: HAConnectionState) {
+        self.stateAfterConnect = stateAfterConnect
+    }
+
     lazy var caches: HACachesContainer = .init(connection: self)
 
     private(set) var state: HAConnectionState = .disconnected(reason: .disconnected) {
@@ -145,10 +192,11 @@ private final class RejectingMockConnection: HAConnection {
 
     func connect() {
         connectCount += 1
-        state = .disconnected(reason: .rejected)
+        state = stateAfterConnect
     }
 
     func disconnect() {
+        disconnectCount += 1
         state = .disconnected(reason: .disconnected)
     }
 
