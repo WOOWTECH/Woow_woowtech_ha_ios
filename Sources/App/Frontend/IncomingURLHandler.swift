@@ -332,8 +332,14 @@ class IncomingURLHandler {
         if let webpageURL = userActivity.webpageURL {
             switch webpageURL.host?.lowercased() {
             case "aiot.woowtech.io":
-                guard BrandedUniversalLink.route(for: webpageURL) != nil else { return false }
-                return handle(url: webpageURL)
+                guard let route = BrandedUniversalLink.route(for: webpageURL) else { return false }
+                switch route {
+                case .tag:
+                    // Preserve the original NDEF payload so NFC read confirmations keep their type.
+                    return handleTagResult(Current.tags.handle(userActivity: userActivity))
+                case .redirect, .invite:
+                    return handle(url: webpageURL)
+                }
             case "my.home-assistant.io":
                 return handle(url: webpageURL)
             default:
