@@ -25,7 +25,8 @@ struct NFCTagApprovalTests {
         #expect(tags.activities.count == 1)
         #expect(tags.activities.first === activity)
 
-        activity.webpageURL = try #require(URL(string: "https://aiot.woowtech.io/tag/front-door?url=https://evil.example"))
+        activity
+            .webpageURL = try #require(URL(string: "https://aiot.woowtech.io/tag/front-door?url=https://evil.example"))
         #expect(!handler.handle(userActivity: activity))
         #expect(tags.activities.count == 1)
     }

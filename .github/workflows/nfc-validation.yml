@@ -67,7 +67,8 @@ jobs:
       run: "python3 - <<'PY'\nimport os,pathlib,re\ns=(pathlib.Path(os.environ['RUNNER_TEMP'])/'woow-results/tests.log').read_text()\n\
         for name in ['testConnectionDelegateRestartsAConnectAttemptThatNeverLeavesConnecting','testConnectionDelegateLeavesAConnectAttemptThatCompletesInTime']:\n\
         \    assert re.search(r\"Test Case .*\"+name+r\".* passed\",s),name\nprint('Both\
-        \ watchdog regression tests executed and passed')\nPY\n\ngrep -E 'brandedLinksPreserveOriginalActivity.*passed'\
+        \ watchdog regression tests executed and passed')\nPY\n\ngrep -E 'Branded\
+        \ NFC links preserve the original activity and reject malformed routes.*passed'\
         \ \"$RUNNER_TEMP/woow-results/tests.log\"\n"
     - name: Simulator app launch and screenshot
       run: 'app=$(find "$RUNNER_TEMP/woow-dd/Build/Products/Debug-iphonesimulator"
