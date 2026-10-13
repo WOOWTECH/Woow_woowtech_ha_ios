@@ -1,0 +1,103 @@
+name: WOOW NFC activity regression validation
+'on':
+  push:
+    branches:
+    - ci/woow-nfc-activity-20261013
+permissions:
+  contents: read
+jobs:
+  simulator:
+    runs-on: macos-26
+    timeout-minutes: 75
+    env:
+      FASTLANE_SKIP_UPDATE_CHECK: 'true'
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+    - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74
+      with:
+        ruby-version: .ruby-version
+        bundler-cache: 'true'
+    - name: Dependencies
+      run: 'gem install cocoapods -v 1.17.0 --no-document
+
+        gem install cocoapods-acknowledgements -v 1.3.0 --no-document
+
+        pod _1.17.0_ install --repo-update
+
+        '
+    - name: Autocorrect source and collect patch
+      run: 'mkdir -p "$RUNNER_TEMP/woow-results"
+
+        bundle exec fastlane autocorrect > "$RUNNER_TEMP/woow-results/autocorrect.log"
+        2>&1
+
+        git diff --binary -- Sources Tests Tools fastlane > "$RUNNER_TEMP/woow-results/corrections.patch"'
+    - name: Full lint
+      id: lint
+      continue-on-error: true
+      run: 'mkdir -p "$RUNNER_TEMP/woow-results"
+
+        set -o pipefail
+
+        bundle exec fastlane lint 2>&1 | tee "$RUNNER_TEMP/woow-results/lint.log"'
+    - name: Build and test on iPhone simulator
+      run: 'mkdir -p "$RUNNER_TEMP/woow-results"
+
+        git rev-parse HEAD > "$RUNNER_TEMP/woow-results/source-sha.txt"
+
+        xcodebuild -version > "$RUNNER_TEMP/woow-results/xcode.txt"
+
+        set +e
+
+        xcodebuild test -workspace HomeAssistant.xcworkspace -scheme Tests-Unit -destination
+        ''platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'' -derivedDataPath "$RUNNER_TEMP/woow-dd"
+        -resultBundlePath "$RUNNER_TEMP/woow-results/Tests.xcresult" -parallel-testing-enabled
+        NO DEVELOPMENT_TEAM=W4UWZ8NP2P CODE_SIGNING_ALLOWED=NO > "$RUNNER_TEMP/woow-results/tests.log"
+        2>&1
+
+        rc=$?
+
+        grep -E ''error:|Executed [0-9]+ test|TEST (SUCCEEDED|FAILED)'' "$RUNNER_TEMP/woow-results/tests.log"
+        | tail -30
+
+        exit "$rc"
+
+        '
+    - name: Ensure the two regression cases ran
+      run: "python3 - <<'PY'\nimport os,pathlib,re\ns=(pathlib.Path(os.environ['RUNNER_TEMP'])/'woow-results/tests.log').read_text()\n\
+        for name in ['testConnectionDelegateRestartsAConnectAttemptThatNeverLeavesConnecting','testConnectionDelegateLeavesAConnectAttemptThatCompletesInTime']:\n\
+        \    assert re.search(r\"Test Case .*\"+name+r\".* passed\",s),name\nprint('Both\
+        \ watchdog regression tests executed and passed')\nPY\n\ngrep -E 'brandedLinksPreserveOriginalActivity.*passed'\
+        \ \"$RUNNER_TEMP/woow-results/tests.log\"\n"
+    - name: Simulator app launch and screenshot
+      run: 'app=$(find "$RUNNER_TEMP/woow-dd/Build/Products/Debug-iphonesimulator"
+        -maxdepth 1 -name ''*.app'' -print -quit)
+
+        test -n "$app"
+
+        device=$(xcrun simctl list devices available -j | python3 -c ''import json,sys;
+        d=json.load(sys.stdin); print(next(x["udid"] for a in d["devices"].values()
+        for x in a if x["name"]=="iPhone 17 Pro"))'')
+
+        xcrun simctl boot "$device" || true
+
+        xcrun simctl bootstatus "$device" -b
+
+        xcrun simctl install "$device" "$app"
+
+        xcrun simctl launch "$device" com.woowtech.aiot.dev
+
+        sleep 5
+
+        xcrun simctl io "$device" screenshot "$RUNNER_TEMP/woow-results/launch.png"
+
+        '
+    - name: Require full lint success
+      if: ${{ always() }}
+      run: test "${{ steps.lint.outcome }}" = success
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      if: always()
+      with:
+        name: woow-nfc-activity-validation
+        path: ${{ runner.temp }}/woow-results
+        retention-days: '5'

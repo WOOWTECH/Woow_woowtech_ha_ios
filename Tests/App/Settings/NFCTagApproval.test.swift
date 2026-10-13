@@ -1,12 +1,34 @@
 import Foundation
 import GRDB
 @testable import HomeAssistant
+import PromiseKit
 @testable import Shared
 import Testing
 
 @Suite(.serialized)
 struct NFCTagApprovalTests {
     private let legacyAllowedTagsKey = "allowedTags"
+
+    @Test("Branded NFC links preserve the original activity and reject malformed routes")
+    @MainActor
+    func brandedLinksPreserveOriginalActivity() throws {
+        let previousTags = Current.tags
+        let tags = RecordingTagManager()
+        Current.tags = tags
+        defer { Current.tags = previousTags }
+
+        let activity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
+        activity.webpageURL = try #require(URL(string: "https://aiot.woowtech.io/tag/front-door"))
+        let handler = IncomingURLHandler(coordinator: MockAppCoordinator())
+        // Returning unhandled avoids presenting UI; the original activity must reach the tag manager.
+        #expect(!handler.handle(userActivity: activity))
+        #expect(tags.activities.count == 1)
+        #expect(tags.activities.first === activity)
+
+        activity.webpageURL = try #require(URL(string: "https://aiot.woowtech.io/tag/front-door?url=https://evil.example"))
+        #expect(!handler.handle(userActivity: activity))
+        #expect(tags.activities.count == 1)
+    }
 
     @Test("Unapproved Home Assistant tags require approval")
     func unapprovedTagsRequireApproval() throws {
@@ -139,5 +161,23 @@ struct NFCTagApprovalTests {
         } else {
             return false
         }
+    }
+}
+
+private final class RecordingTagManager: TagManager {
+    var isNFCAvailable: Bool { false }
+    var activities: [NSUserActivity] = []
+
+    func readNFC() -> Promise<String> {
+        .init(error: TagManagerError.nfcUnavailable)
+    }
+
+    func writeNFC(value: String) -> Promise<String> {
+        .init(error: TagManagerError.nfcUnavailable)
+    }
+
+    func handle(userActivity: NSUserActivity) -> TagManagerHandleResult {
+        activities.append(userActivity)
+        return .unhandled
     }
 }
