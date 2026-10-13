@@ -1,5 +1,9 @@
 #include "HomeAssistant.xcconfig"
 
+// First phone release: match the approved App Store Connect version for app and extensions.
+// Debug retains Version.xcconfig's development version; the build number remains shared.
+MARKETING_VERSION = 1.0
+
 CODE_SIGN_STYLE = Manual
 CODE_SIGN_IDENTITY[sdk=iphoneos*] = Apple Distribution
 CODE_SIGN_IDENTITY[sdk=watchos*] = Apple Distribution

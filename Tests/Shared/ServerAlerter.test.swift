@@ -33,7 +33,7 @@ class ServerAlerterTests: XCTestCase {
         let request = try XCTUnwrap(mock.pendingRequests.first)
         request.completion(.success(.dictionary(["id": "1", "is_admin": userIsAdmin])))
 
-        let url = URL(string: "https://alerts.home-assistant.io/mobile.json")!
+        let url = URL(string: "https://aiot.woowtech.io/mobile.json")!
         stubDescriptors.append(stub(condition: { $0.url == url }, response: { _ in
             switch response {
             case let .success(value):

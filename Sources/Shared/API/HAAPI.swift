@@ -58,10 +58,16 @@ public class HomeAssistantAPI {
 
     private var rejectedReconnectAttempts = 0
     private var rejectedReconnectWorkItem: DispatchWorkItem?
+    private var staleConnectingAttempts = 0
+    private var staleConnectingWorkItem: DispatchWorkItem?
 
     /// Backoff (seconds) for reconnect attempts after a rejected websocket; its count also bounds the
     /// number of attempts. Overridable for tests.
     static var rejectedReconnectDelays: [TimeInterval] = [0, 5, 10]
+
+    /// How long (seconds) a websocket may stay `.connecting` before it is torn down and opened again; the
+    /// last entry repeats, so the retry never gives up. Overridable for tests.
+    static var staleConnectingDelays: [TimeInterval] = [20, 40, 60]
 
     public static var clientVersionDescription: String {
         "\(AppConstants.version) (\(AppConstants.build))"
@@ -1479,9 +1485,16 @@ extension HomeAssistantAPI: SensorObserver {
 
 extension HomeAssistantAPI: HAConnectionDelegate {
     public func connection(_ connection: HAConnection, didTransitionTo state: HAConnectionState) {
+        if case .connecting = state {
+            scheduleStaleConnectingRecovery()
+        } else {
+            cancelStaleConnectingRecovery()
+        }
+
         switch state {
         case .ready:
             resetRejectedReconnectRecovery()
+            staleConnectingAttempts = 0
         case .disconnected(reason: .rejected):
             scheduleRejectedReconnectRecoveryIfNeeded()
         case let .disconnected(reason: .waitingToReconnect(lastError: error, atLatest: _, retryCount: _)):
@@ -1494,6 +1507,34 @@ extension HomeAssistantAPI: HAConnectionDelegate {
         case .connecting, .authenticating, .disconnected(reason: .disconnected):
             break
         }
+    }
+
+    /// Restarts a websocket that never leaves `.connecting`. Starscream ignores `NWConnection`'s `.waiting`
+    /// (server unreachable when the socket opened) and has no timeout on the upgrade response (handshake
+    /// stalled, e.g. across a suspension), so HAKit can sit in `.connecting` forever, and
+    /// `connectWebSocketIfNeeded` deliberately leaves a connecting socket alone. Nothing has been sent to
+    /// Home Assistant's auth endpoint at this point, so retrying cannot trip its ban; the last delay repeats.
+    private func scheduleStaleConnectingRecovery() {
+        let delays = Self.staleConnectingDelays
+        guard let lastDelay = delays.last else { return }
+        let delay = staleConnectingAttempts < delays.count ? delays[staleConnectingAttempts] : lastDelay
+        staleConnectingAttempts += 1
+
+        staleConnectingWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            guard case .connecting = connection.state else { return }
+            Current.Log.info("websocket still connecting after \(delay)s; restarting the connect attempt")
+            connection.disconnect()
+            connection.connect()
+        }
+        staleConnectingWorkItem = workItem
+        connection.callbackQueue.asyncAfter(deadline: .now() + delay, execute: workItem)
+    }
+
+    private func cancelStaleConnectingRecovery() {
+        staleConnectingWorkItem?.cancel()
+        staleConnectingWorkItem = nil
     }
 
     /// Recovers from a rejected websocket (`auth: invalid`): HAKit won't auto-reconnect a rejected

@@ -4,13 +4,13 @@ import Testing
 struct WKUserContentControllerMessageTests {
     @Test func testWKUserContentControllerMessageCases() async throws {
         // Assert the total count of cases
-        assert(WKUserContentControllerMessage.allCases.count == 5)
+        #expect(WKUserContentControllerMessage.allCases.count == 5)
 
         // Assert each case's rawValue
-        assert(WKUserContentControllerMessage.externalBus.rawValue == "externalBus")
-        assert(WKUserContentControllerMessage.updateThemeColors.rawValue == "updateThemeColors")
-        assert(WKUserContentControllerMessage.getExternalAuth.rawValue == "getExternalAuth")
-        assert(WKUserContentControllerMessage.revokeExternalAuth.rawValue == "revokeExternalAuth")
-        assert(WKUserContentControllerMessage.logError.rawValue == "logError")
+        #expect(WKUserContentControllerMessage.externalBus.rawValue == "externalBus")
+        #expect(WKUserContentControllerMessage.updateThemeColors.rawValue == "updateThemeColors")
+        #expect(WKUserContentControllerMessage.getExternalAuth.rawValue == "getExternalAuth")
+        #expect(WKUserContentControllerMessage.revokeExternalAuth.rawValue == "revokeExternalAuth")
+        #expect(WKUserContentControllerMessage.logError.rawValue == "logError")
     }
 }

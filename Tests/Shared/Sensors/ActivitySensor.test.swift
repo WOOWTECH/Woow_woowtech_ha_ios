@@ -5,6 +5,9 @@ import PromiseKit
 import Version
 import XCTest
 
+// Compiled only when fitness sensors are explicitly re-enabled; see
+// Sources/Shared/API/Webhook/Sensors/ActivitySensor.swift for the policy boundary.
+#if WOOWTECH_ENABLE_FITNESS_SENSORS
 class ActivitySensorTests: XCTestCase {
     private enum TestError: Error {
         case someError
@@ -159,3 +162,4 @@ private class FakeMotionActivity: CMMotionActivity {
         set { underlyingConfidence = newValue }
     }
 }
+#endif

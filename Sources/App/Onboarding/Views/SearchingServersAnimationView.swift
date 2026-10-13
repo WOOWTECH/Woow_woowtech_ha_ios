@@ -65,11 +65,12 @@ struct SearchingServersAnimationView: View {
     }
 
     private var logo: some View {
-        Image(.logoInCircle)
+        Image(.logo)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .scaleEffect(logoScale, anchor: .center)
             .frame(width: Constants.logoSize, height: Constants.logoSize)
+            .clipShape(Circle())
+            .scaleEffect(logoScale, anchor: .center)
     }
 
     private var dots: some View {

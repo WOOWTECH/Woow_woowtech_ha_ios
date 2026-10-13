@@ -1,6 +1,24 @@
 import Foundation
 import PromiseKit
 
+// MARK: - First-release policy boundary
+
+//
+// StorageSensor is the only first-party caller of the DiskSpace required-reason API
+// (URLResourceKey.volumeAvailableCapacity*/volumeTotalCapacityKey). Apple's DiskSpace
+// reason codes do not cover a sensor that continuously uploads disk figures off-device,
+// so the first release stops this sensor rather than declaring a reason that does not
+// match the actual behaviour.
+//
+// The implementation below is preserved verbatim behind a compilation condition that is
+// intentionally NOT defined in any xcconfig, so it is excluded from every build product.
+// Re-enabling is an explicit, greppable act: define WOOWTECH_ENABLE_STORAGE_SENSOR and
+// re-check the PrivacyInfo DiskSpace declaration before shipping.
+//
+// WebhookSensorId.storage is deliberately retained for legacy identifier/data
+// compatibility. No sensor history is deleted by this change; the sensor simply stops
+// being reported.
+#if WOOWTECH_ENABLE_STORAGE_SENSOR
 public class StorageSensor: SensorProvider {
     public enum StorageError: Error, Equatable {
         case noData
@@ -112,3 +130,4 @@ public class StorageSensor: SensorProvider {
     }
     #endif
 }
+#endif

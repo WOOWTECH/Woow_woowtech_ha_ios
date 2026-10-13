@@ -356,12 +356,9 @@ struct NotificationCategoryEditorView: View {
     // MARK: - Toolbar actions
 
     private func openHelp() {
-        guard let url = URL(string: "https://aiot.woowtech.io/app/ios/actionable-notifications") else {
-            return
-        }
         // Pass the hosting view controller so the SafariInApp browser preference works
         // (it requires a non-nil presenter to show its in-app browser).
-        openURLInBrowser(url, viewControllerProvider.viewController)
+        openURLInBrowser(AppConstants.WebURLs.actionableNotificationsDocs, viewControllerProvider.viewController)
     }
 
     private func triggerPreviewNotification() {

@@ -5,6 +5,69 @@ import SafariServices
 import Shared
 import SwiftUI
 
+enum BrandedUniversalLinkRoute: Equatable {
+    case redirect(URL)
+    case invite(URL)
+    case tag(String)
+}
+
+enum BrandedUniversalLink {
+    static func route(for url: URL) -> BrandedUniversalLinkRoute? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.scheme?.lowercased() == "https",
+              components.host?.lowercased() == "aiot.woowtech.io",
+              components.user == nil,
+              components.password == nil,
+              components.port == nil else {
+            return nil
+        }
+
+        if let identifier = TagActivityManager.identifier(from: url) {
+            return .tag(identifier)
+        }
+
+        let encodedSegments = components.percentEncodedPath.split(separator: "/", omittingEmptySubsequences: false)
+        let decodedSegments = encodedSegments.compactMap { String($0).removingPercentEncoding }
+        guard decodedSegments.count == encodedSegments.count,
+              decodedSegments.first == "",
+              !decodedSegments.dropFirst().contains(where: { $0 == "." || $0 == ".." }) else {
+            return nil
+        }
+
+        if decodedSegments.count >= 3,
+           decodedSegments[1] == "redirect",
+           !decodedSegments.dropFirst(2).contains(where: \.isEmpty),
+           components.fragment == nil {
+            var legacy = components
+            legacy.host = "my.home-assistant.io"
+            guard let legacyURL = legacy.url else { return nil }
+            return .redirect(legacyURL)
+        }
+
+        if ["/invite", "/invite/"].contains(components.percentEncodedPath),
+           components.query == nil,
+           isValidInvitationFragment(components.fragment) {
+            return .invite(url)
+        }
+
+        return nil
+    }
+
+    private static func isValidInvitationFragment(_ fragment: String?) -> Bool {
+        guard let fragment,
+              let queryItems = URLComponents(string: "?\(fragment)")?.queryItems,
+              queryItems.count == 1,
+              queryItems[0].name == "url",
+              let value = queryItems[0].value,
+              let serverURL = URL(string: value),
+              ["http", "https"].contains(serverURL.scheme?.lowercased()),
+              serverURL.host != nil else {
+            return false
+        }
+        return true
+    }
+}
+
 class IncomingURLHandler {
     private(set) weak var coordinator: AppCoordinator!
 
@@ -35,13 +98,21 @@ class IncomingURLHandler {
         }
         guard let host = url.host else { return true }
 
-        // Universal / web links (e.g. `my.home-assistant.io`, including HACS "my" redirect links) can be
-        // delivered through `onOpenURL` as well as `onContinueUserActivity` under the SwiftUI lifecycle.
-        // They are not deep-link actions, so route them to the my-link handler instead of treating the
-        // host as an `IncomingURLAction` (which would otherwise show a "not a valid route" error).
-        // Restrict to web schemes since `showMy(for:)` presents an `SFSafariViewController`, which only
-        // supports http/https; this also prevents a crafted `woowhome://my.home-assistant.io/...`
-        // from reaching Safari.
+        if let route = BrandedUniversalLink.route(for: url) {
+            switch route {
+            case let .redirect(legacyURL):
+                return showMy(for: legacyURL)
+            case let .invite(invitationURL):
+                return handleInvitation(url: invitationURL)
+            case .tag:
+                let activity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
+                activity.webpageURL = url
+                return handleTagResult(Current.tags.handle(userActivity: activity))
+            }
+        }
+
+        // Preserve the complete legacy my.home-assistant.io protocol. Restrict it to web schemes so a crafted
+        // `woowtech://my.home-assistant.io/...` cannot reach SFSafariViewController.
         if ["http", "https"].contains(url.scheme?.lowercased()), host.lowercased() == "my.home-assistant.io" {
             return showMy(for: url)
         }
@@ -99,7 +170,7 @@ class IncomingURLHandler {
                         view.modalPresentationStyle = .overFullScreen
                         webViewController.present(view, animated: true)
                     }
-            case .navigate: // woowhome://navigate/lovelace/dashboard
+            case .navigate: // woowtech://navigate/lovelace/dashboard
                 guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
                     return false
                 }
@@ -221,22 +292,8 @@ class IncomingURLHandler {
                         webViewController.presentOverlayController(controller: controller, animated: true)
                     }
             case .invite:
-                // woowhome://invite#url=http%3A%2F%2Fhomeassistant.local%3A8123
-                Current.Log.verbose("Received Home Assistant invitation URL: \(url)")
-                guard let fragment = url.fragment else {
-                    Current.Log.error("Home Assistant invitation does not contain a fragment (e.g. #url=...)")
-                    return false
-                }
-
-                // Convert fragment into query items (#url=... -> ?url=...)
-                let components = URLComponents(string: "?\(fragment)")
-                let urlParam = components?.queryItems?.first(where: { $0.name == "url" })?.value
-
-                let inviteUrl = URL(string: urlParam.orEmpty)
-
-                Current.sceneManager.appCoordinator.done { coordinator in
-                    coordinator.presentInvitation(url: inviteUrl)
-                }
+                // woowtech://invite#url=http%3A%2F%2Fhomeassistant.local%3A8123
+                return handleInvitation(url: url)
             }
         } else {
             Current.Log.warning("Can't route incoming URL: \(url)")
@@ -270,21 +327,27 @@ class IncomingURLHandler {
             return true
         }
 
-        switch Current.tags.handle(userActivity: userActivity) {
-        case let .handled(type):
-            showTagReadConfirmation(type: type)
-            return true
-        case let .requiresApproval(tag, type):
-            showTagApproval(tag: tag, type: type)
-            return true
-        case let .open(url):
-            // NFC-based URL
-            return handle(url: url)
+        // Universal links must use the same strict classifier as onOpenURL before the generic tag manager's
+        // legacy `?url=` wrapper support can inspect them.
+        if let webpageURL = userActivity.webpageURL {
+            switch webpageURL.host?.lowercased() {
+            case "aiot.woowtech.io":
+                guard BrandedUniversalLink.route(for: webpageURL) != nil else { return false }
+                return handle(url: webpageURL)
+            case "my.home-assistant.io":
+                return handle(url: webpageURL)
+            default:
+                break
+            }
+        }
+
+        let tagResult = Current.tags.handle(userActivity: userActivity)
+        switch tagResult {
+        case .handled, .requiresApproval, .open:
+            return handleTagResult(tagResult)
         case .unhandled:
             // not a tag
-            if let url = userActivity.webpageURL, url.host?.lowercased() == "my.home-assistant.io" {
-                return showMy(for: url)
-            } else if let interaction = userActivity.interaction {
+            if let interaction = userActivity.interaction {
                 if
                     let intent = interaction.intent as? OpenPageIntent,
                     let panel = intent.page, let path = panel.identifier {
@@ -605,6 +668,39 @@ class IncomingURLHandler {
         }
     }
 
+    private func handleInvitation(url: URL) -> Bool {
+        Current.Log.verbose("Received Home Assistant invitation URL: \(url)")
+        guard let fragment = url.fragment else {
+            Current.Log.error("Home Assistant invitation does not contain a fragment (e.g. #url=...)")
+            return false
+        }
+
+        // Convert fragment into query items (#url=... -> ?url=...). Only the exact `url` item is consumed.
+        let components = URLComponents(string: "?\(fragment)")
+        let urlParam = components?.queryItems?.first(where: { $0.name == "url" })?.value
+        let inviteURL = URL(string: urlParam.orEmpty)
+
+        Current.sceneManager.appCoordinator.done { coordinator in
+            coordinator.presentInvitation(url: inviteURL)
+        }
+        return true
+    }
+
+    private func handleTagResult(_ result: TagManagerHandleResult) -> Bool {
+        switch result {
+        case let .handled(type):
+            showTagReadConfirmation(type: type)
+            return true
+        case let .requiresApproval(tag, type):
+            showTagApproval(tag: tag, type: type)
+            return true
+        case let .open(url):
+            return handle(url: url)
+        case .unhandled:
+            return false
+        }
+    }
+
     private func showMy(for url: URL) -> Bool {
         guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             Current.Log.info("couldn't create url components out of \(url)")
@@ -805,7 +901,7 @@ extension IncomingURLHandler {
     }
 
     private func fireEventURLHandler(_ url: URL, _ serviceData: [String: String]) {
-        // woowhome://fire_event/custom_event?entity_id=device_tracker.entity
+        // woowtech://fire_event/custom_event?entity_id=device_tracker.entity
 
         firstly { () -> Promise<Void> in
             if let api = Current.apis.first {
@@ -833,7 +929,7 @@ extension IncomingURLHandler {
         _ callServiceTarget: (fullServiceName: String, domain: String, service: String),
         _ serviceData: [String: String]
     ) {
-        // woowhome://call_service/device_tracker.see?entity_id=device_tracker.entity
+        // woowtech://call_service/device_tracker.see?entity_id=device_tracker.entity
         firstly { () -> Promise<Void> in
             if let api = Current.apis.first {
                 return api.CallService(
@@ -879,7 +975,7 @@ extension IncomingURLHandler {
     }
 
     private func sendLocationURLHandler() {
-        // woowhome://send_location/
+        // woowtech://send_location/
         firstly {
             Current.location.oneShotLocation(.URLScheme, nil)
         }.then { location in

@@ -18,6 +18,7 @@ final class MockWebViewController: WebViewControllerProtocol {
     var evaluateJavaScriptCalled = false
     var evaluateJavaScriptCallCount = 0
     var lastEvaluatedJavaScriptScript: String?
+    var evaluatedJavaScriptScripts: [String] = []
     var lastEvaluatedJavaScriptCompletion: ((Any?, (any Error)?) -> Void)?
     var evaluateJavaScriptExpectation: XCTestExpectation?
     var dismissControllerAboveOverlayControllerCalled = false
@@ -72,6 +73,7 @@ final class MockWebViewController: WebViewControllerProtocol {
         evaluateJavaScriptCalled = true
         evaluateJavaScriptCallCount += 1
         lastEvaluatedJavaScriptScript = script
+        evaluatedJavaScriptScripts.append(script)
         lastEvaluatedJavaScriptCompletion = completion
         evaluateJavaScriptExpectation?.fulfill()
     }

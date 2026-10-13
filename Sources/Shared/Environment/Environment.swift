@@ -256,10 +256,16 @@ public class AppEnvironment {
     }
 
     public var sensors = with(SensorContainer()) {
+        // Fitness sensors stopped for the first release; see ActivitySensor.swift policy boundary.
+        #if WOOWTECH_ENABLE_FITNESS_SENSORS
         $0.register(provider: ActivitySensor.self)
         $0.register(provider: PedometerSensor.self)
+        #endif
         $0.register(provider: BatterySensor.self)
+        // Storage sensor stopped for the first release; see StorageSensor.swift policy boundary.
+        #if WOOWTECH_ENABLE_STORAGE_SENSOR
         $0.register(provider: StorageSensor.self)
+        #endif
         $0.register(provider: ConnectivitySensor.self)
         $0.register(provider: GeocoderSensor.self)
         $0.register(provider: InputOutputDeviceSensor.self)
@@ -458,6 +464,11 @@ public class AppEnvironment {
         // Add the destination to the logger
         log.add(destination: fileDestination)
 
+        // Use this local logger: Current is still being initialized here.
+        if FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.AppGroupID) == nil {
+            log.error("App Group unavailable; using temporary storage without extension sharing")
+        }
+
         // Add basic app info, version info etc, to the start of the logs
         log.logAppDetails()
 
@@ -489,6 +500,10 @@ public class AppEnvironment {
 
     public var motion = Motion()
 
+    // Gated with the fitness sensors: PedometerSensor is its only consumer.
+    // `motion` above is intentionally NOT gated - BarometerSensor (CMAltimeter) still needs the
+    // Motion & Fitness authorization surfaced by the Sensors settings screen.
+    #if WOOWTECH_ENABLE_FITNESS_SENSORS
     /// Wrapper around CMPedometeer
     public struct Pedometer {
         private let underlyingPedometer = CMPedometer()
@@ -506,6 +521,7 @@ public class AppEnvironment {
     }
 
     public var pedometer = Pedometer()
+    #endif
 
     /// Wrapper around CMAltimeter for barometric pressure readings
     public struct Barometer {
@@ -532,8 +548,6 @@ public class AppEnvironment {
     public var barometer = Barometer()
 
     public var device = DeviceWrapper()
-
-    public var matter = MatterWrapper()
 
     /// Wrapper around CLGeocoder
     public struct Geocoder {

@@ -20,6 +20,7 @@ struct WidgetCircularView: View {
             ))
             .foregroundStyle(.ultraThickMaterial)
             Image(uiImage: Self.scaleLogo(logo: Asset.logo.image, size: 10))
+                .clipShape(Circle())
         }
         .padding()
         .background(Color(uiColor: .secondarySystemBackground))

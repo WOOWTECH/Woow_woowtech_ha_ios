@@ -12,27 +12,11 @@ class OnboardingAuthDetails: Equatable {
             throw OnboardingAuthError(kind: .invalidURL)
         }
 
-        let redirectURI: String
-        let scheme: String
-        let clientID: String
-
-        // swiftlint:disable prohibit_environment_assignment
-        if Current.appConfiguration == .debug {
-            clientID = "https://woowtech.github.io/woow_ha_ios/ios"
-            redirectURI = "woowhome://auth-callback"
-            scheme = "woowhome"
-        } else {
-            clientID = "https://woowtech.github.io/woow_ha_ios/ios"
-            redirectURI = "woowhome://auth-callback"
-            scheme = "woowhome"
-        }
-        // swiftlint:enable prohibit_environment_assignment
-
         components.path = "/auth/authorize"
         components.queryItems = [
             URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "client_id", value: clientID),
-            URLQueryItem(name: "redirect_uri", value: redirectURI),
+            URLQueryItem(name: "client_id", value: AppConstants.OAuth.clientID),
+            URLQueryItem(name: "redirect_uri", value: AppConstants.OAuth.redirectURI),
         ]
 
         guard let authURL = components.url else {
@@ -40,7 +24,7 @@ class OnboardingAuthDetails: Equatable {
         }
 
         self.url = authURL
-        self.scheme = scheme
+        self.scheme = AppConstants.urlScheme
     }
 
     static func == (lhs: OnboardingAuthDetails, rhs: OnboardingAuthDetails) -> Bool {

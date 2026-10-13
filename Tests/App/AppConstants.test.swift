@@ -11,42 +11,36 @@ struct AppConstantsTests {
     }
 
     @Test func testWebURLs() async throws {
-        assert(AppConstants.WebURLs.homeAssistant.absoluteString == "https://www.home-assistant.io")
-        assert(
-            AppConstants.WebURLs.homeAssistantGetStarted
-                .absoluteString == "https://www.home-assistant.io/installation/"
-        )
-        assert(AppConstants.WebURLs.companionAppDocs.absoluteString == "https://companion.home-assistant.io")
-        assert(
-            AppConstants.WebURLs.companionAppDocsTroubleshooting
-                .absoluteString == "https://companion.home-assistant.io/docs/troubleshooting/errors"
-        )
-        assert(AppConstants.WebURLs.beta.absoluteString == "https://companion.home-assistant.io/app/ios/beta")
-        assert(AppConstants.WebURLs.betaMac.absoluteString == "https://companion.home-assistant.io/app/ios/beta_mac")
-        assert(AppConstants.WebURLs.review.absoluteString == "https://companion.home-assistant.io/app/ios/review")
-        assert(
-            AppConstants.WebURLs.reviewMac
-                .absoluteString == "https://companion.home-assistant.io/app/ios/review_mac"
-        )
-        assert(AppConstants.WebURLs.translate.absoluteString == "https://companion.home-assistant.io/app/ios/translate")
-        assert(AppConstants.WebURLs.forums.absoluteString == "https://community.home-assistant.io/")
-        assert(AppConstants.WebURLs.chat.absoluteString == "https://companion.home-assistant.io/app/ios/chat")
-        assert(AppConstants.WebURLs.twitter.absoluteString == "https://twitter.com/home_assistant")
-        assert(AppConstants.WebURLs.facebook.absoluteString == "https://www.facebook.com/292963007723872")
-        assert(AppConstants.WebURLs.repo.absoluteString == "https://companion.home-assistant.io/app/ios/repo")
-        assert(AppConstants.WebURLs.issues.absoluteString == "https://companion.home-assistant.io/app/ios/issues")
-        assert(
+        let base = "https://aiot.woowtech.io/en/blog/help-center-7/woowtech-aiot-app-"
+        #expect(AppConstants.WebURLs.homeAssistant.absoluteString == "https://aiot.woowtech.io/en")
+        #expect(AppConstants.WebURLs.homeAssistantGetStarted.absoluteString == base + "364")
+        #expect(AppConstants.WebURLs.homeAssistantCompanionGetStarted.absoluteString == base + "364")
+        #expect(AppConstants.WebURLs.companionAppDocs.absoluteString == base + "364")
+        #expect(AppConstants.WebURLs.companionAppDocsTroubleshooting.absoluteString == base + "365")
+        #expect(
             AppConstants.WebURLs.companionAppConnectionSecurityLevel
-                .absoluteString == "https://companion.home-assistant.io/docs/getting_started/connection-security-level"
+                .absoluteString == base + "365#connection-security-level"
         )
-        assert(
-            AppConstants.WebURLs.companionLocalPush
-                .absoluteString == "https://companion.home-assistant.io/app/ios/local-push"
+        #expect(AppConstants.WebURLs.support.absoluteString == base + "366")
+        #expect(AppConstants.WebURLs.notificationsDocs.absoluteString == base + "367")
+        #expect(AppConstants.WebURLs.companionLocalPush.absoluteString == base + "local-pushwebsocket-368")
+        #expect(AppConstants.WebURLs.actionableNotificationsDocs.fragment == "actionable-notifications")
+        #expect(AppConstants.WebURLs.notificationSoundsDocs.fragment == "notifications-sounds")
+        #expect(AppConstants.WebURLs.liveActivitiesDocs.absoluteString == base + "live-activities-369#live-activities")
+        #expect(AppConstants.WebURLs.widgetsDocs.absoluteString == base + "iosandroid-widgets-371#ios-widgets")
+        #expect(ExternalLink.customWidgetsDocumentation == AppConstants.WebURLs.widgetsDocs)
+        #expect(AppConstants.WebURLs.nfcDocs.absoluteString == base + "nfcapp-373#nfc")
+        #expect(
+            AppConstants.WebURLs.appleWatchDocs.absoluteString ==
+                "https://companion.home-assistant.io/docs/apple-watch/"
         )
-        assert(
-            AppConstants.WebURLs.nfcDocs
-                .absoluteString == "https://companion.home-assistant.io/app/ios/nfc"
-        )
+    }
+
+    @Test func testBrandAuthenticationIdentity() {
+        #expect(AppConstants.urlScheme == "woowtech")
+        #expect(AppConstants.deeplinkURL.absoluteString == "woowtech://")
+        #expect(AppConstants.OAuth.redirectURI == "woowtech://auth-callback")
+        #expect(AppConstants.OAuth.clientID == "https://aiot.woowtech.io/ios")
     }
 
     @Test func testQueryItemsRawValues() async throws {
@@ -117,7 +111,7 @@ struct AppConstantsTests {
     @available(iOS 16.0, *)
     @Test func testFirebaseURL() async throws {
         assert(
-            AppConstants.Firebase.pushURLString == "https://mobile-apps.home-assistant.io/api/sendPushNotification",
+            AppConstants.Firebase.pushURLString == "https://aiot.woowtech.io/api/sendPushNotification",
             "Firebase push URL should match expected value"
         )
     }
@@ -130,8 +124,8 @@ struct AppConstantsTests {
         // Slash-less HA path — rooted so it still navigates the frontend.
         assert(normalized("map/0") == "/map/0")
         // Deep links are left untouched — the URL handler processes them as deep links.
-        assert(normalized("woowhome://navigate/map/0") == "woowhome://navigate/map/0")
-        assert(normalized("woowhome://navigate/map/0") == "woowhome://navigate/map/0")
+        assert(normalized("woowtech://navigate/map/0") == "woowtech://navigate/map/0")
+        assert(normalized("woowtech://navigate/map/0") == "woowtech://navigate/map/0")
         // External URLs — untouched so they open in the browser.
         assert(normalized("https://google.com") == "https://google.com")
         assert(normalized("https://www.google.com") == "https://www.google.com")

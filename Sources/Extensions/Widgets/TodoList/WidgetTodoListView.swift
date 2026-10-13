@@ -67,6 +67,7 @@ struct WidgetTodoListView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
+                    .clipShape(Circle())
                     .padding(DesignSystem.Spaces.half)
             }
         }

@@ -1,6 +1,6 @@
 @testable import HomeAssistant
 import PromiseKit
-import Shared
+@testable import Shared
 import WebKit
 import XCTest
 
@@ -13,13 +13,41 @@ class OnboardingAuthLoginViewControllerImplTests: XCTestCase {
         controller = try .init(authDetails: .init(baseURL: URL(string: "https://www.example.com")!))
     }
 
+    func testAuthorizationAndTokenRequestsUseSameClient() throws {
+        let details = try OnboardingAuthDetails(baseURL: URL(string: "https://example.com")!)
+        let query = try XCTUnwrap(URLComponents(url: details.url, resolvingAgainstBaseURL: false)?.queryItems)
+        XCTAssertEqual(query.first { $0.name == "client_id" }?.value, AppConstants.OAuth.clientID)
+        XCTAssertEqual(query.first { $0.name == "redirect_uri" }?.value, "woowtech://auth-callback")
+        XCTAssertEqual(details.scheme, "woowtech")
+
+        for route in [AuthenticationRoute.token(authorizationCode: "test-code"), .refreshToken(token: "test-token")] {
+            let request = try route.asURLRequestWith(baseURL: URL(string: "https://example.com")!)
+            let body = try XCTUnwrap(request.httpBody)
+            let encoded = try XCTUnwrap(String(data: body, encoding: .utf8))
+            let decoded = try XCTUnwrap(encoded.removingPercentEncoding)
+            XCTAssertTrue(decoded.contains("client_id=\(AppConstants.OAuth.clientID)"))
+        }
+    }
+
+    func testNonCallbackAppURLsDoNotCompleteLogin() {
+        for value in ["woowtech-extra://auth-callback", "woowtech://navigate", "woowhome://auth-callback"] {
+            let url = URL(string: value)!
+            controller.webView(
+                controller.webViewForTests,
+                decidePolicyFor: FakeWKNavigationAction(request: URLRequest(url: url)),
+                decisionHandler: { XCTAssertEqual($0, .allow) }
+            )
+            XCTAssertFalse(controller.promise.isResolved)
+        }
+    }
+
     func testError() {
         controller.webView(controller.webViewForTests, didFail: nil, withError: URLError(.badServerResponse))
         XCTAssertTrue(controller.promise.isRejected)
     }
 
-    func testDecisionHandlerWithHomeassistantScheme() {
-        let url = URL(string: "woowhome://test")!
+    func testDecisionHandlerWithWoowtechCallback() {
+        let url = URL(string: "woowtech://auth-callback")!
 
         let expectation = expectation(description: "decision handler")
         controller.webView(
@@ -46,7 +74,7 @@ class OnboardingAuthLoginViewControllerImplTests: XCTestCase {
         )
         wait(for: [httpExpectation], timeout: 10.0)
 
-        let callbackURL = URL(string: "woowhome://auth-callback?code=code_123")!
+        let callbackURL = URL(string: "woowtech://auth-callback?code=code_123")!
         let callbackExpectation = expectation(description: "callback nav")
         controller.webView(
             controller.webViewForTests,

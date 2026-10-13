@@ -38,6 +38,10 @@ public class DeviceWrapper {
         ProcessInfo.processInfo.isLowPowerModeEnabled
     }
 
+    // Disk-space required-reason API. Gated by the same first-release policy boundary as
+    // StorageSensor (its only first-party caller) so the API is absent from build products.
+    // See Sources/Shared/API/Webhook/Sensors/StorageSensor.swift for the rationale.
+    #if WOOWTECH_ENABLE_STORAGE_SENSOR
     public lazy var volumes: () -> [URLResourceKey: Int64]? = {
         #if os(iOS)
         return try? URL(fileURLWithPath: NSHomeDirectory()).resourceValues(forKeys: [
@@ -58,6 +62,7 @@ public class DeviceWrapper {
         return nil
         #endif
     }
+    #endif
 
     public lazy var identifierForVendor: () -> String? = {
         #if os(iOS)

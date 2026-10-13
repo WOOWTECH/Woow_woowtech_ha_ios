@@ -74,10 +74,8 @@ abstract_target 'iOS' do
 
   target 'SharedTesting'
   target 'Extensions-Intents'
-  target 'Extensions-Matter'
   target 'Extensions-NotificationContent'
   target 'Extensions-NotificationService'
-  target 'Extensions-PushProvider'
   target 'Extensions-Share'
   target 'Extensions-Widgets'
 end

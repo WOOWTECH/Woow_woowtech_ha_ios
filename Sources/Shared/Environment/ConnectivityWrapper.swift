@@ -1,4 +1,5 @@
 import Foundation
+import os.log
 #if os(iOS)
 import CoreTelephony
 import Reachability
@@ -52,7 +53,22 @@ public class ConnectivityWrapper {
         do {
             try reachability?.startNotifier()
         } catch {
-            Current.Log.error("failed to start reachability notifier: \(error)")
+            // ⚠️ 這裡**不能碰 `Current`**,理由與 AppConstants.AppGroupContainer 那處相同:
+            // `AppEnvironment` 的 `connectivity` 是非 lazy 的 stored property
+            // (Environment.swift:570),它的預設值會在 `AppEnvironment.init()` 期間求值,
+            // 而整個 `AppEnvironment` 是 `underlyingCurrent` 的 swift_once 一次性初始化。
+            // 在那當中讀 `Current` 會造成 once 重入,直接 EXC_BREAKPOINT / SIGTRAP。
+            //
+            // 觸發條件不在我們手上:`startNotifier()` 會在 SystemConfiguration 當下不可用時
+            // 丟例外(ReachabilitySwift 的 unableToSetCallback / unableToSetDispatchQueue /
+            // unableToGetFlags)。冷啟動、剛開機、飛航模式切換都碰得到 ——
+            // 也就是說,這是一顆間歇性、QA 很難重現的啟動閃退。
+            os_log(
+                .error,
+                log: OSLog(subsystem: AppConstants.BundleID, category: "ConnectivityWrapper"),
+                "failed to start reachability notifier: %{public}@",
+                String(describing: error)
+            )
         }
         self.hasWiFi = { true }
         self.currentWiFiSSID = {

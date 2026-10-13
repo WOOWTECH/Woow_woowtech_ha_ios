@@ -171,9 +171,10 @@ struct SettingsView: View {
                 ForEach(SettingsItem.helpItems, id: \.self) { item in
                     if item == .help {
                         Button {
-                            if let url = URL(string: "https://aiot.woowtech.io") {
-                                openURLInBrowser(url, viewControllerProvider.viewController)
-                            }
+                            openURLInBrowser(
+                                AppConstants.WebURLs.companionAppDocs,
+                                viewControllerProvider.viewController
+                            )
                         } label: {
                             HStack {
                                 settingsItemLabel(item)
@@ -326,6 +327,7 @@ struct SettingsView: View {
     }
 
     private var shouldShowWatchSection: Bool {
+        guard AppConstants.includesWatchAppInPhonePackage else { return false }
         guard UIDevice.current.userInterfaceIdiom == .phone else { return false }
         if Current.isDebug {
             return true

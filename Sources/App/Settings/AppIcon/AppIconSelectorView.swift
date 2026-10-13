@@ -32,7 +32,7 @@ struct AppIconSelectorView: View {
             }
             timerToReplaceTintedPeviewColorByRandomColor()
         }
-        .navigationTitle("App Icon")
+        .navigationTitle(L10n.SettingsDetails.General.AppIcon.title)
     }
 
     private func sectionNameForIcon(_ icon: AppIcon) -> String {

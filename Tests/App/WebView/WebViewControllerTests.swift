@@ -155,6 +155,51 @@ final class WebViewControllerTests: XCTestCase {
         XCTAssertEqual(handler.cleanCacheCallCount, 0)
     }
 
+    /// 迴歸測試:伺服器拒絕 refresh token 時,必須顯示重新認證畫面,而不是停在白畫面。
+    ///
+    /// 背景(2026-09-16 於 iPad 實機抓到):
+    /// 存在裝置上的 refresh token 與 App 現在送出的 `client_id` 不一致時,
+    /// Home Assistant 的 `/auth/token` 會回 `400 {"error":"invalid_request"}`。
+    /// `TokenManager` 收到後會送出 `onboardingObservation.needed(.unauthenticated(...))`,
+    /// 但當時**沒有任何人在聽這個通知**:
+    ///   * `OnboardingStateObservable`(容器層)對 `.unauthenticated` 刻意 `break`,
+    ///     註解寫「由 WebViewController 自己處理」;
+    ///   * 而 `WebViewController` 既沒有宣告 `OnboardingStateObserver`,
+    ///     也沒有在 `viewDidLoad` 註冊 —— 上游 PR #5246 補上的那兩段,本 fork 的
+    ///     分支點在它之前,所以從未有過。
+    /// 結果:`showReAuthPopup` 永遠不會被呼叫 → `connectionState` 進不了 `.authInvalid`
+    /// → 空狀態不顯示 → WebView 一直等 `externalAuthSetToken` → **使用者看到白畫面**。
+    func testServerRejectingRefreshTokenSurfacesReAuthenticationInsteadOfBlankWebView() async throws {
+        let server = Server.fake(identifier: .init(rawValue: "reauth-test"))
+        let sut = makeSUT(server: server)
+        // `webView` 是 `WKWebView!`,正式執行時由 `viewDidLoad` 建立;測試沒跑 viewDidLoad,
+        // 而 `showReAuthPopup` 會呼叫 `load(request:)` → `webView.load(...)`,不補就會崩潰。
+        //
+        // ⚠️ 這裡**不能**用 makeSUT 注入 `view` 的那招 `setValue(_:forKey:)`——
+        //    KVC 只對 `@objc` 屬性有效,`view` 是 UIViewController 的 @objc 屬性所以可以,
+        //    但 `webView` 是純 Swift 屬性,KVC 設不進去(實測:值沒進去,
+        //    load(request:) 仍然對 nil 強制解包而崩潰)。
+        //    這個測試檔已經 `@testable import HomeAssistant`,internal 屬性可直接指派。
+        sut.webView = WKWebView()
+
+        let observer = try XCTUnwrap(
+            sut as? OnboardingStateObserver,
+            "WebViewController 必須是 OnboardingStateObserver,否則 refresh token 被拒時沒有人會顯示重新認證畫面"
+        )
+
+        observer.onboardingStateDidChange(
+            to: .needed(.unauthenticated(server.identifier.rawValue, 400))
+        )
+        // 通知會 hop 到 main actor,等它處理完
+        try await Task.sleep(nanoseconds: 400_000_000)
+
+        XCTAssertEqual(
+            sut.connectionState,
+            .authInvalid,
+            "伺服器拒絕 refresh token 後必須進入 authInvalid 並顯示重新認證畫面;停在原狀態就是白畫面"
+        )
+    }
+
     private func makeSUT(server: Server = .fake()) -> WebViewController {
         let sut = WebViewController(server: server)
         let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 640))

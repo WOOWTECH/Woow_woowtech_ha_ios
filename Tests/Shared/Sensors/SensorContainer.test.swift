@@ -390,6 +390,103 @@ class SensorContainerTests: XCTestCase {
         let result = try hang(Promise(promise))
         XCTAssertEqual(Set(result.sensors.map(\.UniqueID)), Set(["included"]))
     }
+
+    // MARK: - P3: geocoded-location default on new installs
+
+    //
+    // These exercise the real SettingsStore.migrateGeocodedLocationDefault(existingInstallation:)
+    // against an isolated UserDefaults suite. The real App Group defaults are never read or
+    // written, and no device data is touched.
+
+    func testFreshInstallWithNoStoredKeysDisablesGeocodedLocation() {
+        withIsolatedSettingsStore { store, defaults in
+            XCTAssertNil(defaults.object(forKey: "disabledSensors"))
+            XCTAssertNil(defaults.object(forKey: "migratedGeocodedLocationDefaultOff"))
+
+            store.migrateGeocodedLocationDefault(existingInstallation: false)
+
+            XCTAssertFalse(container.isEnabled(uniqueID: WebhookSensorId.geocodedLocation.rawValue))
+        }
+    }
+
+    func testExistingInstallKeepsLegacyImplicitEnabledDefault() {
+        withIsolatedSettingsStore { store, _ in
+            store.migrateGeocodedLocationDefault(existingInstallation: true)
+
+            XCTAssertTrue(container.isEnabled(uniqueID: WebhookSensorId.geocodedLocation.rawValue))
+        }
+    }
+
+    func testExistingInstallKeepsExplicitDisabledChoice() {
+        withIsolatedSettingsStore(
+            disabledSensors: [WebhookSensorId.geocodedLocation.rawValue]
+        ) { store, _ in
+            store.migrateGeocodedLocationDefault(existingInstallation: true)
+
+            XCTAssertFalse(container.isEnabled(uniqueID: WebhookSensorId.geocodedLocation.rawValue))
+        }
+    }
+
+    func testExistingInstallKeepsUnrelatedDisabledSensorAndLeavesGeocodedEnabled() {
+        withIsolatedSettingsStore(disabledSensors: ["other_sensor"]) { store, _ in
+            store.migrateGeocodedLocationDefault(existingInstallation: true)
+
+            XCTAssertTrue(container.isEnabled(uniqueID: WebhookSensorId.geocodedLocation.rawValue))
+            XCTAssertFalse(container.isEnabled(uniqueID: "other_sensor"))
+        }
+    }
+
+    func testMigrationRunsOnceAndDoesNotResetLaterExplicitOptIn() {
+        withIsolatedSettingsStore { store, _ in
+            store.migrateGeocodedLocationDefault(existingInstallation: false)
+            XCTAssertFalse(container.isEnabled(uniqueID: WebhookSensorId.geocodedLocation.rawValue))
+
+            container.setEnabled(true, forUniqueID: WebhookSensorId.geocodedLocation.rawValue)
+            store.migrateGeocodedLocationDefault(existingInstallation: false)
+
+            XCTAssertTrue(container.isEnabled(uniqueID: WebhookSensorId.geocodedLocation.rawValue))
+        }
+    }
+
+    func testMigrationWritesOnlyToTheInjectedPreferenceStore() {
+        withIsolatedSettingsStore { store, defaults in
+            store.migrateGeocodedLocationDefault(existingInstallation: false)
+
+            // Proves the isolated suite is the one actually used, without reading the real
+            // App Group defaults to compare against.
+            XCTAssertTrue(defaults.bool(forKey: "migratedGeocodedLocationDefaultOff"))
+            XCTAssertEqual(
+                defaults.stringArray(forKey: "disabledSensors"),
+                [WebhookSensorId.geocodedLocation.rawValue]
+            )
+        }
+    }
+
+    /// Swaps in a `SettingsStore` backed by a throwaway suite, runs `work`, then restores the
+    /// previous store and removes the suite entirely.
+    private func withIsolatedSettingsStore(
+        disabledSensors: [String]? = nil,
+        perform work: (SettingsStore, UserDefaults) -> Void
+    ) {
+        let suiteName = "io.woowtech.aiot.tests.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            XCTFail("could not create an isolated preference suite")
+            return
+        }
+        if let disabledSensors {
+            defaults.set(disabledSensors, forKey: "disabledSensors")
+        }
+
+        let previousStore = Current.settingsStore
+        let isolatedStore = SettingsStore(prefs: defaults)
+        Current.settingsStore = isolatedStore
+        defer {
+            Current.settingsStore = previousStore
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+
+        work(isolatedStore, defaults)
+    }
 }
 
 private extension WebhookSensor {
