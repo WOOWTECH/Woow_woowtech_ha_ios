@@ -9,6 +9,7 @@ guard args.count >= 5 else {
     FileHandle.standardError.write("usage: icon_tool <src> <bgHex|none> <size> <out> [scale]\n".data(using: .utf8)!)
     exit(2)
 }
+
 let srcPath = args[1], bgHex = args[2]
 let size = Int(args[3])!, outPath = args[4]
 let scale = args.count > 5 ? Double(args[5])! : 1.0
@@ -50,6 +51,7 @@ if bgHex != "none" {
 } else {
     pngData = rep.representation(using: .png, properties: [:])!
 }
+
 do {
     try pngData.write(to: URL(fileURLWithPath: outPath))
 } catch {
